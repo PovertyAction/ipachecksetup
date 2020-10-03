@@ -504,9 +504,10 @@ program define  ipachecksetup
 											!inlist(type, "begin group", "end group", "begin repeat", "end repeat")
 												
 		* export variables to skip sheet. 
-		export excel name_log `label' assertion if_condition using "`outfile'", sheet("6. logic") sheetmodify cell(A2)
-		noi disp "... 6. logic"
-		
+		if `=_N' > 0 {
+			export excel name_log `label' assertion if_condition using "`outfile'", sheet("6. logic") sheetmodify cell(A2)
+			noi disp "... 6. logic complete"
+		}
 		* 8. constraints
 		use `_survey', clear
 		keep type name `label' constraint		
