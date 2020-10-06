@@ -451,102 +451,103 @@ program define  ipachecksetup
 			
 		* drop all field without relevance
 		drop if missing(relevance) | type == "note" | regexm(type, "group|repeat")
-
-		* to cater for no spaces in programming, add white space to either side of =
-		* trim excess whitespace, change = to ==
-		foreach var of varlist relevance if_condition {
-			replace `var' = trim(itrim(subinstr(`var', "=", " # ", .)))
-			replace `var' = subinstr(`var', "'", char(34), .)
-			replace `var' = subinstr(`var', "> # ", ">= ", .)
-			replace `var' = subinstr(`var', "< # ", "<= ", .)
-			replace `var' = subinstr(`var', "! # ", "!= ", .)
-			replace `var' = subinstr(`var', "{", "", .)
-			replace `var' = subinstr(`var', "}", "", .)
-			replace `var' = subinstr(`var', " and ", " & ", .)
-			replace `var' = subinstr(`var', " or ", " | ", .)
-			replace `var' = subinstr(`var', "\(", "", 1)
-			replace `var' = subinstr(`var', "\", " & ", .)
-			replace `var' = subinstr(`var', "\", " & ", .)
-			replace `var' = subinstr(`var', "not(", "!(", .)
-			replace `var' = subinstr(`var', ")", "", 1) if strpos(`var', "(") == 0 ///
-				| (strpos(`var', "(") > strpos(`var', ")"))
-			loc repeat = 9
-			while `repeat' == 9 {
-				gen sub = substr(`var', (strpos(`var', "#") + 2), 1)
-				replace `var' = subinstr(`var', "#", "==", 1) if ///
-					regexm(sub, "[0-9]|[-]") | regexm(sub, char(34))
-				replace `var' = subinstr(`var', "#", "=", 1) if ///
-					regexm(sub, "[a-zA-Z]") | regexm(sub, char(34))
-				cap assert !regexm(`var', "#")
-				loc repeat `=_rc'
-				drop sub
-			}
-			* change selected and selected-at with regexm
-			replace `var' = subinstr(`var', "count-selected", "wordcount", .)
-			replace `var' = subinstr(`var', "selected-at", "regexm(string", .)
-			replace `var' = subinstr(`var', "selected", "regexm(string", .)
-			replace `var' = subinstr(`var', ", ", ",", .)
-			replace `var' = ustrregexra(`var', ",", "\),"+char(34) ) if strpos(`var',"regexm")
-			replace `var' = ustrregexra(`var', "\)", char(34)+"\)" ) if strpos(`var',"regexm")
-			replace `var' = ustrregexra(`var', char(34)+"\),", "\)," ) if strpos(`var',"regexm")
-			
-		}
-
-		* add relevance to if condition
-		replace if_condition = if_condition + " & (" + relevance + ")" if !missing(if_condition)
-		replace if_condition = relevance if missing(if_condition)
-			
-		* generate assertion. Assert for non-missing in all. Manual edits will be needed for addional
-		* assertions required
-		gen assertion = name_log + " == ."  if regexm(type, "integer|select_one")
-		replace assertion = "!missing(" + name_log + ")" ///
-											if missing(assertion) & ///
-											!inlist(type, "begin group", "end group", "begin repeat", "end repeat")
-												
-		* export variables to skip sheet. 
 		if `=_N' > 0 {
+			* to cater for no spaces in programming, add white space to either side of =
+			* trim excess whitespace, change = to ==
+			foreach var of varlist relevance if_condition {
+				replace `var' = trim(itrim(subinstr(`var', "=", " # ", .)))
+				replace `var' = subinstr(`var', "'", char(34), .)
+				replace `var' = subinstr(`var', "> # ", ">= ", .)
+				replace `var' = subinstr(`var', "< # ", "<= ", .)
+				replace `var' = subinstr(`var', "! # ", "!= ", .)
+				replace `var' = subinstr(`var', "{", "", .)
+				replace `var' = subinstr(`var', "}", "", .)
+				replace `var' = subinstr(`var', " and ", " & ", .)
+				replace `var' = subinstr(`var', " or ", " | ", .)
+				replace `var' = subinstr(`var', "\(", "", 1)
+				replace `var' = subinstr(`var', "\", " & ", .)
+				replace `var' = subinstr(`var', "\", " & ", .)
+				replace `var' = subinstr(`var', "not(", "!(", .)
+				replace `var' = subinstr(`var', ")", "", 1) if strpos(`var', "(") == 0 ///
+					| (strpos(`var', "(") > strpos(`var', ")"))
+				loc repeat = 9
+				while `repeat' == 9 {
+					gen sub = substr(`var', (strpos(`var', "#") + 2), 1)
+					replace `var' = subinstr(`var', "#", "==", 1) if ///
+						regexm(sub, "[0-9]|[-]") | regexm(sub, char(34))
+					replace `var' = subinstr(`var', "#", "=", 1) if ///
+						regexm(sub, "[a-zA-Z]") | regexm(sub, char(34))
+					cap assert !regexm(`var', "#")
+					loc repeat `=_rc'
+					drop sub
+				}
+				* change selected and selected-at with regexm
+				replace `var' = subinstr(`var', "count-selected", "wordcount", .)
+				replace `var' = subinstr(`var', "selected-at", "regexm(string", .)
+				replace `var' = subinstr(`var', "selected", "regexm(string", .)
+				replace `var' = subinstr(`var', ", ", ",", .)
+				replace `var' = ustrregexra(`var', ",", "\),"+char(34) ) if strpos(`var',"regexm")
+				replace `var' = ustrregexra(`var', "\)", char(34)+"\)" ) if strpos(`var',"regexm")
+				replace `var' = ustrregexra(`var', char(34)+"\),", "\)," ) if strpos(`var',"regexm")
+				
+			}
+
+			* add relevance to if condition
+			replace if_condition = if_condition + " & (" + relevance + ")" if !missing(if_condition)
+			replace if_condition = relevance if missing(if_condition)
+				
+			* generate assertion. Assert for non-missing in all. Manual edits will be needed for addional
+			* assertions required
+			gen assertion = name_log + " == ."  if regexm(type, "integer|select_one")
+			replace assertion = "!missing(" + name_log + ")" ///
+												if missing(assertion) & ///
+												!inlist(type, "begin group", "end group", "begin repeat", "end repeat")
+													
+			* export variables to skip sheet. 
+		
 			export excel name_log `label' assertion if_condition using "`outfile'", sheet("6. logic") sheetmodify cell(A2)
 			noi disp "... 6. logic complete"
 		}
+
 		* 8. constraints
 		use `_survey', clear
 		keep type name `label' constraint		
 			* keep only fields with contraints
 			keep if !missing(constraint) & inlist(type, "integer", "decimal")
-
-			split constraint, parse("and" "or") gen(constraint_)
-			gen hardmin = ""
-			gen hardmax = ""
-			gen softmin = ""
-			gen softmax = ""	
-			
-				foreach var of varlist constraint_* {
-					replace `var' = ""  if strpos(`var',"$")
-					replace `var' = ""  if !strpos(`var',"<") & !strpos(`var',">")
-					*hardmin
-					replace hardmin = regexs(3)  if regexm(`var',"(.)+(>=)+([0-9]+\.?[0-9]*)") 
-					replace hardmin = string(real(regexs(3)) + 1)  if regexm(`var',"(.)+(>)+([0-9]+\.?[0-9]*)") & type=="integer"
-					replace hardmin = string(real(regexs(3)) + .01)  if regexm(`var',"(.)+(>)+([0-9]+\.?[0-9]*)") & type=="decimal"
-					*hardmax
-					replace hardmax = regexs(3)  if regexm(`var',"(.)+(<=)+([0-9]+\.?[0-9]*)") 
-					replace hardmax = string(real(regexs(3)) - 1)  if regexm(`var',"(.)+(<)+([0-9]+\.?[0-9]*)") & type=="integer"
-					replace hardmax = string(real(regexs(3)) - .01)  if regexm(`var',"(.)+(<)+([0-9]+\.?[0-9]*)") & type=="decimal"
-				
-					*softmin
-					replace softmin = string(ceil(real(hardmin) + real(hardmin)* (`softmin'/100))) if type=="integer"
-					replace softmin = string(real(hardmin) + real(hardmin)* (`softmin'/100)) if type=="decimal"
-					
-					*softmax
-					replace softmax = string(floor(real(hardmax) - real(hardmax)* (`softmax'/100))) if type=="integer"
-					replace softmax = string(real(hardmax) - real(hardmax)* (`softmax'/100)) if type=="decimal"
-		
-				}
-			replace softmin = "" if softmin == "."
-			replace softmax = "" if softmax == "."
-			drop if mi(hardmin) & mi(hardmax)
-
-			* export variable names, `label', constraints to first column A
 			if `=_N' > 0 {
+				split constraint, parse("and" "or") gen(constraint_)
+				gen hardmin = ""
+				gen hardmax = ""
+				gen softmin = ""
+				gen softmax = ""	
+				
+					foreach var of varlist constraint_* {
+						replace `var' = ""  if strpos(`var',"$")
+						replace `var' = ""  if !strpos(`var',"<") & !strpos(`var',">")
+						*hardmin
+						replace hardmin = regexs(3)  if regexm(`var',"(.)+(>=)+([0-9]+\.?[0-9]*)") 
+						replace hardmin = string(real(regexs(3)) + 1)  if regexm(`var',"(.)+(>)+([0-9]+\.?[0-9]*)") & type=="integer"
+						replace hardmin = string(real(regexs(3)) + .01)  if regexm(`var',"(.)+(>)+([0-9]+\.?[0-9]*)") & type=="decimal"
+						*hardmax
+						replace hardmax = regexs(3)  if regexm(`var',"(.)+(<=)+([0-9]+\.?[0-9]*)") 
+						replace hardmax = string(real(regexs(3)) - 1)  if regexm(`var',"(.)+(<)+([0-9]+\.?[0-9]*)") & type=="integer"
+						replace hardmax = string(real(regexs(3)) - .01)  if regexm(`var',"(.)+(<)+([0-9]+\.?[0-9]*)") & type=="decimal"
+					
+						*softmin
+						replace softmin = string(ceil(real(hardmin) + real(hardmin)* (`softmin'/100))) if type=="integer"
+						replace softmin = string(real(hardmin) + real(hardmin)* (`softmin'/100)) if type=="decimal"
+						
+						*softmax
+						replace softmax = string(floor(real(hardmax) - real(hardmax)* (`softmax'/100))) if type=="integer"
+						replace softmax = string(real(hardmax) - real(hardmax)* (`softmax'/100)) if type=="decimal"
+			
+					}
+				replace softmin = "" if softmin == "."
+				replace softmax = "" if softmax == "."
+				drop if mi(hardmin) & mi(hardmax)
+
+				* export variable names, `label', constraints to first column A
+			
 				export excel name `label' constraint hardmin softmin softmax hardmax using "`outfile'", ///
 					sheet("8. constraints") sheetmodify cell(A2)
 				noi disp "... 8. constraint complete"
@@ -573,30 +574,32 @@ program define  ipachecksetup
 		use `_survey', clear
 
 		keep if inlist(type, "start", "end")
-		forval x=1/`=_N' {
-			if type[`x']=="start" loc startvar = name[`x'] 
-			if type[`x']=="end" loc endvar = name[`x'] 	
-		}
+		if `=_N' > 0 {
+			forval x=1/`=_N' {
+				if type[`x']=="start" loc startvar = name[`x'] 
+				if type[`x']=="end" loc endvar = name[`x'] 	
+			}
 
-		clear
-		set obs 1
-		gen start = "`startvar'"			
-		gen end = "`endvar'"	
-		gen surveystart = "`surveystart'"
-		* Export date variables
-		export excel start end surveystart using "`outfile'", sheet("10. dates") sheetmodify cell(A2)
-		
-		noi disp "... 10. dates complete"
-		
+			clear
+			set obs 1
+			gen start = "`startvar'"			
+			gen end = "`endvar'"	
+			gen surveystart = "`surveystart'"
+			* Export date variables
+			export excel start end surveystart using "`outfile'", sheet("10. dates") sheetmodify cell(A2)
+			
+			noi disp "... 10. dates complete"
+		}	
 
 		* 11. outliers
 		use `_survey', clear
 		keep type `label' name appearance		 
 			* keep only integer and decimal fields
 			keep if (type == "decimal" | type == "integer") & appearance != "label"
-			gen multiplier = "`multiplier'"
+			
 			* Export variable names and multiplier
 			if `=_N' > 0 {
+				gen multiplier = "`multiplier'"
 				export excel name `label' multiplier using "`outfile'", sheet("11. outliers") sheetmodify cell(A2)
 				noi disp "... 11. outliers complete"
 			}

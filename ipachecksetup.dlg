@@ -1,0 +1,46 @@
+*! Version 1.0.0 Ishmail Azindoo Baako and Mehrab Ali 19Sep2020
+* Originally created by Ishmail Azindoo Baako (IPA) 24feb2018
+
+VERSION 12.0
+
+POSITION . . 600 600
+
+DIALOG main, label("ipachecksetup - Prefill IPA Check inputs") tabtitle("Main")
+BEGIN
+  TEXT     tx_xls   10   10	  120	 ., label(Select XLS Form)
+  FILE 	   fl_xls 	10	 +20	580	 ., label(Browse ...) error(select xls form)
+  TEXT     tx_tpl   10   +40  400  ., label(Select HFC inputs template)
+  FILE     fl_tpl   10   +20  580  ., label(Browse ...) error(specify HFC inputs) save
+  TEXT	   tx_out		10	 +40  400	 ., label(Save output as)
+  FILE 	   fl_out		10	 +20  580  ., label(Save As ...) error(specify output file) save
+  CHECKBOX cb_rep   20   +30  .    ., label(replace) option(replace) 
+  FRAME    box_fmt  10   +30  310 100
+    TEXT     tx_fmt   20   +10  .    ., label(Select whether data is in long or wide format)
+    RADIO    rd_fmt_w 30   +30  100  ., first label("Wide")
+    RADIO    rd_fmt_l @    +20  @    ., last label("Long")
+END
+
+DIALOG advanced, label("test") tabtitle("Advanced")
+BEGIN
+  TEXT     tx_test   10   10   120  ., label(Select XLS Form)
+END
+
+OK ok1,      label("OK")
+CANCEL can1, label("Cancel")
+HELP hlp1,   view("help ipachecksetup")
+SUBMIT sub1, label("Submit")
+RESET res1
+COPY copy1
+
+PROGRAM command
+BEGIN
+    put "ipachecksetup using "
+    require main.fl_xls 
+    put `"""' main.fl_xls `"""' 
+	  put ", template("
+    put main.fl_tpl
+    put ") outfile("
+    put main.fl_out
+    put ") " 
+        option main.cb_rep
+END

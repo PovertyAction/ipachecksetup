@@ -15,9 +15,10 @@ net install ipachecksetup, all replace ///
 
 ## Syntax
 ```stata
-ipachecksetup using filename, template(string) outfile(string) [replace long wide consent() id() incomplete() 
+ipachecksetup using filename, template(string) outfile(string) 
+[replace long wide consent() id() incomplete() 
 surveystart() multiplier() r1() r2() backcheck() label() enumid() teamid() bcid() bcteamid() survey() media() 
-softmin() softmax()]
+softmin() softmax() osp() refusal() dontknow()]
 ```
 
 
