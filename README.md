@@ -2,7 +2,7 @@
 
 ## Overview
 
-``ipachecksetup`` is a stata program that prefills the IPA HFC excel inputs template automatically for a survey. ``ipachecksetup`` takes the IPA HFC excel input template and fill in the template using the SurveyCTO questionnaire XLSForm. This program produces an HFC excel input file, however, further edits are required such as adding logic checks those did not exist in the SurveyCTO form. Read further about HFC excel input file at [IPA github page](https://github.com/PovertyAction/high-frequency-checks){:target="_blank" rel="noopener"}.
+``ipachecksetup`` is a stata program that prefills the IPA HFC excel inputs template automatically for a survey. ``ipachecksetup`` takes the IPA HFC excel input template and fill in the template using the SurveyCTO questionnaire XLSForm. This program produces an HFC excel input file, however, further edits are required such as adding logic checks those did not exist in the SurveyCTO form. Read further about HFC excel input file at <a href="https://github.com/PovertyAction/high-frequency-checks" target="_blank">IPA github page</a>.
 
 The program adds variables inside repeat groups 
 
@@ -21,7 +21,7 @@ ipachecksetup using filename, [template(string)] outfile(string) [options]
 ```
 ``filename`` can be xls or xlsx. If ``filename`` is specified without an extension, .xls or xlsx is assumed. Specify the path and file name of the SurveyCTO XLSForm. If ``filename`` contains embedded spaces, enclose it in double quotes.
 
-``template`` is optional. Specify the path and file name of IPA HFC input Excel template to be used. If ``template`` is not specified, the template will be downloaded from [IPA github page](https://github.com/PovertyAction/high-frequency-checks){:target="_blank" rel="noopener"}, which also requires Internet connection.
+``template`` is optional. Specify the path and file name of IPA HFC input Excel template to be used. If ``template`` is not specified, the template will be downloaded from <a href="https://github.com/PovertyAction/high-frequency-checks" target="_blank">IPA github page</a>, which also requires Internet connection.
 
 ``outfile`` is the filled in HFC input file. If ``outfile`` is specified without an extension, .xlsm is assumed. If ``outfile`` contains embedded spaces, enclose it in double quotes. Specify the path and file name of the filled in HFC input file.
 
@@ -90,4 +90,4 @@ ipachecksetup using "ipa_yop_2017_short_DRAFT.xlsx", ///
 
 ```
 
-Please report all bugs/feature request to the [github issues page](https://github.com/PovertyAction/ipachecksetup/issues){:target="_blank" rel="noopener"}
+Please report all bugs/feature request to the <a href="https://github.com/PovertyAction/ipachecksetup/issues" target="_blank"> github issues page</a>
