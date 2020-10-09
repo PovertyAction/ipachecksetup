@@ -212,12 +212,18 @@ program define  ipachecksetup
 		loc outfile = regexr("`outfile'", ".xlsm", "")
 		loc outfile =  "`outfile'.xlsm"
 
-
 		if "`template'"!="" {
 			copy "`template'" "`outfile'", `replace'
 		}
 		else {
-			copy "`git_hfc'/`branch'/xlsx/hfc_inputs.xlsm" "`outfile'", `replace'
+			if "`replace'" == "" {
+				noi di as err "file `outfile' already exists"
+				exit 602
+			}
+			else{
+				copy "`git_hfc'/`branch'/xlsx/hfc_inputs.xlsm" "`outfile'"	
+			}
+			
 		}
 		
 		*00. setup

@@ -17,6 +17,11 @@ net install ipachecksetup, all replace ///
 ```stata
 ipachecksetup using filename, [template(string)] outfile(string) prefix() [options]
 ```
+
+To open dialogue box, type: ``db ipachecksetup``
+
+
+
 ``filename`` can be xls or xlsx. If ``filename`` is specified without an extension, .xls or xlsx is assumed. Specify the path and file name of the SurveyCTO XLSForm. If ``filename`` contains embedded spaces, enclose it in double quotes.
 
 ``template`` is optional. Specify the path and file name of IPA HFC input Excel template to be used. If ``template`` is not specified, the template will be downloaded from <a href="https://github.com/PovertyAction/high-frequency-checks" target="_blank">IPA github page</a>, which also requires Internet connection.
@@ -40,7 +45,7 @@ ipachecksetup using filename, [template(string)] outfile(string) prefix() [optio
 | ---        |    ----   |
  | replace |  Replace ``outfile`` if already exists. | 
  | long  |  Assume data is in long format. Only needed if forms has repeat groups. | 
- | wide  |  Assume data is in wide format. Only needed if forms has repeat groups. If wide is specified, the program adds variables inside repeat groups with * in prefix so that the ``ipacheck`` program considers all possible variables generated from the repeat group. However, this does not work for "6. logic" and "9. specify" sheets, therefore, the program adds only the first repeat in these sheets, i.e., adds _1 prefix. For example, `var_1` if `var` is inside repeat group. |  
+ | wide  |  Assume data is in wide format. Only needed if forms has repeat groups. If wide is specified, the program adds variables inside repeat groups with * in prefix so that the ``ipacheck`` program considers all possible variables generated from the repeat group. However, this does not work for "6. logic", "8. constraints" and "9. specify" sheets, therefore, the program adds only the first repeat in these sheets, i.e., adds _1 prefix. For example, `var_1` if `var` is inside repeat group. |  
  | survey  |  Path and name of Survey Dataset. | 
  | media  |  Path of media directory for comments and text audits. | 
  | osp  |  Missing value for others. Only allows real number, if not specified -666 is assumed. | 

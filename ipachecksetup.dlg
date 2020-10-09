@@ -8,22 +8,25 @@ POSITION . . 600 400
 DIALOG main, label("ipachecksetup - Prefill IPA Check inputs") tabtitle("Main")
 BEGIN
   TEXT     tx_xls   10   10	  120	 ., label(Select XLS Form*)
-  FILE 	   fl_xls 	10	 +20	580	 ., label(Browse) error(select xls form) filter(*.xls | *.xlsx) dialogtitle(Select XLS Form)
-  TEXT     tx_tpl   10   +40  400  ., label(Select HFC inputs template*)
-  FILE     fl_tpl   10   +20  580  ., label(Browse) error(specify HFC inputs) filter(*.xlsm) dialogtitle(Select IPA HFC template)
-  TEXT	   tx_out		10	 +40  400	 ., label(Save output as*)
+  FILE 	   fl_xls 	10	 +20	580	 ., label(Browse) error(select xls form)  dialogtitle(Select XLS Form)
+  TEXT     tx_tpl   10   +30  400  ., label(Select HFC inputs template)
+  FILE     fl_tpl   10   +20  580  ., label(Browse)  dialogtitle(Select IPA HFC template)
+  TEXT	   tx_out		10	 +30  400	 ., label(Save output as*)
   FILE 	   fl_out		10	 +20  580  ., label(Save As) error(specify output file) save
-  CHECKBOX cb_rep   20   +30  .    ., label(replace) option(replace) 
-  FRAME    box_fmt  10   +30  230 170, error(select eatiher wide or long)
+  CHECKBOX cb_rep   20   +40  .    ., label(replace) option(replace) 
+  TEXT     tx_pre   250   @  .  ., label(Prefix*) 
+  EDIT     st_prefix 300   @  210    ., label(Prefix) 
+  FRAME    box_fmt  10   +40  230 170, error(select eatiher wide or long)
     TEXT     tx_fmt   20   +10  210    ., label(Select whether data is in long or wide:)
-    RADIO    rd_fmt_w 30   +30  100  ., first label("Wide")
-    RADIO    rd_fmt_l 30   +20  @    ., last label("Long")
-    TEXTBOX     tx_label   20   +30  210    ., label(Specify label language: (keep blank if language not specified in XLSForm))
+    RADIO    rd_fmt_l 30   +30  100    ., first label("Long") option(long)
+    RADIO    rd_fmt_w 30   +20  @  ., last label("Wide") option(wide)
+    TEXTBOX     tx_label   20   +30  210    40, label(Specify label language: (keep blank if language not specified in XLSForm))
     EDIT     st_label 20   +50  210    ., label(Specify label language) 
    
-  GROUPBOX    box_ins  250   180  330 200, label(Instructions) 
+  GROUPBOX    box_ins  250   203  330 170, label(Instructions) 
     TEXT     tx_insone 270   +20  300    ., label(1. Fill in the main tab) 
     TEXT     tx_instwo 270   +20  300    ., label(2. Fill in the advanced tab for other options)
+    TEXTBOX  tx_insgen 270   +40  300    50, label(Read further about HFC excel input file at IPA github page: https://github.com/PovertyAction/high-frequency-checks)
 END
 
 DIALOG advanced, label("test") tabtitle("Advanced")
@@ -47,12 +50,27 @@ COPY copy1
 PROGRAM command
 BEGIN
     put "ipachecksetup using "
+   
     require main.fl_xls 
     put `"""' main.fl_xls `"""' 
-	  put ", template("
-    put main.fl_tpl
-    put ") outfile("
-    put main.fl_out
+	 
+    
+    put ", outfile("
+    require  main.fl_out
+    put `"""' main.fl_out `"""' 
+    
+    put ") prefix("
+    require main.st_prefix
+    put main.st_prefix
     put ") " 
+
+    if (main.fl_tpl) {
+      put " template("
+      put `"""'  main.fl_tpl `"""' ")" 
+    }
+
+
         option main.cb_rep
+        option main.rd_fmt_w
+        option main.rd_fmt_l
 END
