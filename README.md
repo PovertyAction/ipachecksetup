@@ -15,7 +15,7 @@ net install ipachecksetup, all replace ///
 
 ## Syntax
 ```stata
-ipachecksetup using filename, [template(string)] outfile(string) suffix() [options]
+ipachecksetup using filename, [template(string)] outfile(string) prefix() [options]
 ```
 ``filename`` can be xls or xlsx. If ``filename`` is specified without an extension, .xls or xlsx is assumed. Specify the path and file name of the SurveyCTO XLSForm. If ``filename`` contains embedded spaces, enclose it in double quotes.
 
@@ -23,7 +23,7 @@ ipachecksetup using filename, [template(string)] outfile(string) suffix() [optio
 
 ``outfile`` is the filled in HFC input file. If ``outfile`` is specified without an extension, .xlsm is assumed. If ``outfile`` contains embedded spaces, enclose it in double quotes. Specify the path and file name of the filled in HFC input file.
 
-``suffix`` is a short suffix (i.e., project initial) that will be added with the HFC output files. For example, ``suffix(IPA)`` is specified, the HFC will produce these files:
+``prefix`` is a short prefix (i.e., project initial) that will be added with the HFC output files. For example, ``prefix(IPA)`` is specified, the HFC will produce these files:
 
 | Description | File name |
 | ---        |    ----   |
@@ -40,7 +40,7 @@ ipachecksetup using filename, [template(string)] outfile(string) suffix() [optio
 | ---        |    ----   |
  | replace |  Replace ``outfile`` if already exists. | 
  | long  |  Assume data is in long format. Only needed if forms has repeat groups. | 
- | wide  |  Assume data is in wide format. Only needed if forms has repeat groups. If wide is specified, the program adds variables inside repeat groups with * in suffix so that the ``ipacheck`` program considers all possible variables generated from the repeat group. However, this does not work for "6. logic" and "9. specify" sheets, therefore, the program adds only the first repeat in these sheets, i.e., adds _1 suffix. For example, `var_1` if `var` is inside repeat group. |  
+ | wide  |  Assume data is in wide format. Only needed if forms has repeat groups. If wide is specified, the program adds variables inside repeat groups with * in prefix so that the ``ipacheck`` program considers all possible variables generated from the repeat group. However, this does not work for "6. logic" and "9. specify" sheets, therefore, the program adds only the first repeat in these sheets, i.e., adds _1 prefix. For example, `var_1` if `var` is inside repeat group. |  
  | survey  |  Path and name of Survey Dataset. | 
  | media  |  Path of media directory for comments and text audits. | 
  | osp  |  Missing value for others. Only allows real number, if not specified -666 is assumed. | 
