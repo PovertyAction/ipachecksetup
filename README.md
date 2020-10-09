@@ -2,9 +2,7 @@
 
 ## Overview
 
-``ipachecksetup`` is a stata program that prefills the IPA HFC excel inputs template automatically for a survey. ``ipachecksetup`` takes the IPA HFC excel input template and fill in the template using the SurveyCTO questionnaire XLSForm. This program produces an HFC excel input file, however, further edits are required such as adding logic checks those did not exist in the SurveyCTO form. Read further about HFC excel input file at <a href="https://github.com/PovertyAction/high-frequency-checks" target="_blank">IPA github page</a>.
-
-The program adds variables inside repeat groups 
+``ipachecksetup`` is a stata program that prefills the IPA HFC excel inputs template automatically for a survey. ``ipachecksetup`` takes the IPA HFC excel input template and fill in the template using the SurveyCTO questionnaire XLSForm. This program produces an HFC excel input file, however, further edits are required such as adding logic checks those did not exist in the SurveyCTO form. The program does not fill in Progress Report specifics which will require manual modification. Read further about HFC excel input file at <a href="https://github.com/PovertyAction/high-frequency-checks" target="_blank">IPA github page</a>.
 
 
 ## Installaion
@@ -17,7 +15,7 @@ net install ipachecksetup, all replace ///
 
 ## Syntax
 ```stata
-ipachecksetup using filename, [template(string)] outfile(string) [options]
+ipachecksetup using filename, [template(string)] outfile(string) suffix() [options]
 ```
 ``filename`` can be xls or xlsx. If ``filename`` is specified without an extension, .xls or xlsx is assumed. Specify the path and file name of the SurveyCTO XLSForm. If ``filename`` contains embedded spaces, enclose it in double quotes.
 
@@ -25,13 +23,24 @@ ipachecksetup using filename, [template(string)] outfile(string) [options]
 
 ``outfile`` is the filled in HFC input file. If ``outfile`` is specified without an extension, .xlsm is assumed. If ``outfile`` contains embedded spaces, enclose it in double quotes. Specify the path and file name of the filled in HFC input file.
 
+``suffix`` is a short suffix (i.e., project initial) that will be added with the HFC output files. For example, ``suffix(IPA)`` is specified, the HFC will produce these files:
+
+| Description | File name |
+| ---        |    ----   |
+| HFC Output File | IPA_HFC_output.xlsx |
+| HFC Enumerator File | IPA_enumdb.xlsx |
+| HFC Text Audit File | IPA_text.xlsx |
+| Survey Duplicate Output File | IPA_duplicates.xlsx |
+| Back Check Comparison Output | IPA_bc.xlsx |
+| HFC Research File | IPA_research.xlsx |
+
 
 ## Options
 | Options      | Description |
 | ---        |    ----   |
  | replace |  Replace ``outfile`` if already exists. | 
  | long  |  Assume data is in long format. Only needed if forms has repeat groups. | 
- | wide  |  Assume data is in wide format. Only needed if forms has repeat groups. |  
+ | wide  |  Assume data is in wide format. Only needed if forms has repeat groups. If wide is specified, the program adds variables inside repeat groups with * in suffix so that the ``ipacheck`` program considers all possible variables generated from the repeat group. However, this does not work for "6. logic" and "9. specify" sheets, therefore, the program adds only the first repeat in these sheets, i.e., adds _1 suffix. For example, `var_1` if `var` is inside repeat group. |  
  | survey  |  Path and name of Survey Dataset. | 
  | media  |  Path of media directory for comments and text audits. | 
  | osp  |  Missing value for others. Only allows real number, if not specified -666 is assumed. | 
@@ -42,7 +51,7 @@ ipachecksetup using filename, [template(string)] outfile(string) [options]
  | enumid   |  Enumerator ID. | 
  | teamid  |  Enumerator Team ID. | 
  | incomplete  |  Comma separated variables along with complete value. ``incomplete(consent 1, phone_response 1)``. If not specified, the program searches for any variable having "consent" in the name, and assumes it to be incomplete variable and 1 as complete value. | 
- | surveystart |  Survey Start date (MM/DD/YYYY) | 
+ | surveystart |  Survey Start date (MM/DD/YYYY). ``surveystart(9/14/2020)``. | 
  | label  |  Label language (Specify if multiple languages exist in XLS form). Case sensative. If in SurveyCTO XLSForm it is defined as ``label::English``, specify ``label(English)``. Do not specify `label` if SurveyCTO XLSForm only has one `label` column. | 
  | <ins>mul</ins>tiplier  |  Multiplier for outliers followed by SD. If not specified 3 is assumed. This will be assigned to all variables. If you need to change multiplier value for certain variable(s), please edit the HFC input excel temlate after running the program. If ``sd`` is specified, SD will be used, instead of Interquantile Range. To use SD: ``multiplier(3, sd)``. To use Interquantile Range ``multiplier(3)``. | 
  | softmin  |  Soft minimum constraint (default is 10, i.e., 10% increased value from hard min). Hard min is taken from the constraints in SurveyCTO XLSForm. If the SurveyCTO form does not have a minimum constraint, hard min and soft min will not be populated. Please manually add them or modify specific variables after running the program, if required. | 

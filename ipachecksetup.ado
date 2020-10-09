@@ -36,7 +36,7 @@ version 	12.0
 cap program drop ipachecksetup
 program define  ipachecksetup
 	#d;
-	syntax	using/, [template(string)] outfile(string) 
+	syntax	using/, [template(string)] outfile(string) suffix(string)
 					[osp(real -666) REFusal(real -888) DONTKnow(real -999) 
 					consent(string) id(string) incomplete(string) surveystart(string)
 					MULtiplier(string) r1(string) r2(string) BACKcheck(string)
@@ -228,20 +228,18 @@ program define  ipachecksetup
 		replace data = "`media'" 			in 4 // Media folder
 
 		replace data = "`outfile'" 			in 7 // HFC & BC input file name
-		loc outfile_dup = regexr("`outfile'", ".xlsm", "_duplicates.xlsx")
-		loc outfile_hfc = regexr("`outfile'", ".xlsm", "_output.xlsx")
-		loc outfile_hfc = regexr("`outfile_hfc'", "input", "")
-		loc outfile_enum = regexr("`outfile'", ".xlsm", "_enumdb.xlsx")
-		loc outfile_text = regexr("`outfile'", ".xlsm", "_text.xlsx")
-		loc outfile_r = regexr("`outfile'", ".xlsm", "_research.xlsx")
-		loc outfile_bc = regexr("`outfile'", ".xlsm", "_bc.xlsx")
+		loc outfile_dup = "suffix" + "_duplicates.xlsx"
+		loc outfile_hfc = "suffix" + "_HFC_output.xlsx"
+		loc outfile_enum = "`suffix'" + "_enumdb.xlsx"
+		loc outfile_text = "`suffix'" + "_text.xlsx"
+		loc outfile_r = "`suffix'" + "_research.xlsx"
 
 		replace data = "`outfile_hfc'" 		in 12 //  file name
 		replace data = "`outfile_enum'" 	in 13 // enumdb file name
 		replace data = "`outfile_text'" 	in 14 // text audit file name
 		replace data = "`outfile_dup'" 		in 16 // duplicate file name
 		if "`backcheck'"!="" {
-			loc outfile_bc = regexr("`outfile'", ".xlsm", "_BC.xlsx")
+			loc outfile_bc = "`suffix'" + "_bc.xlsx"
 			replace data = "`outfile_bc'" 	in 17 // duplicate file name
 		}
 		replace data = "`outfile_r'" 		in 18 // research file name
