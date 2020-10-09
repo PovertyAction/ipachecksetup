@@ -36,10 +36,10 @@ version 	12.0
 cap program drop ipachecksetup
 program define  ipachecksetup
 	#d;
-	syntax	using/, template(string) outfile(string) 
+	syntax	using/, [template(string)] outfile(string) 
 					[osp(real -666) REFusal(real -888) DONTKnow(real -999) 
 					consent(string) id(string) incomplete(string) surveystart(string)
-					MULtiplier(real 3) r1(string) r2(string) BACKcheck(string)
+					MULtiplier(string) r1(string) r2(string) BACKcheck(string)
 					replace long wide label(string) enumid(string) teamid(string) 
 					bcid(string) bcteamid(string) survey(string) media(string) SOFTMIn(real 10) SOFTMAx(real 10)] 
 		;
@@ -47,6 +47,11 @@ program define  ipachecksetup
 
  	qui {
 		loc label  label`label'
+
+		* Setup URL
+		loc git "https://raw.githubusercontent.com/PovertyAction"
+		loc git_hfc "`git'/high-frequency-checks"
+		loc branch master
 
 		* tempfiles
 		tempfile _choices _survey 
@@ -170,12 +175,8 @@ program define  ipachecksetup
 			replace grp_var 	= 0 if missing(grp_var)
 			replace rpt_grp_var = 0 if missing(rpt_grp_var)
 
-			replace name_log = subinstr(name, "_1", "", .) if (regexm(type, "^(begin)") & regexm(type, "group|repeat")) in `curr_sn'
+			//replace name_log = subinstr(name, "_1", "", .) if (regexm(type, "^(begin)") & regexm(type, "group|repeat")) in `curr_sn'
 			replace name = subinstr(name, "*", "", .) if (regexm(type, "^(begin)") & regexm(type, "group|repeat")) in `curr_sn'
-			
-			
-
-
 		}
 		
 		gen newname = name
@@ -185,6 +186,7 @@ program define  ipachecksetup
 		if "`long'" ~= "" {
 			drop if rpt_grp_var
 			replace _sn = _n
+			replace name_log = name  if rpt_grp_var
 		}
 			
 		* include a wild card in repeat var names if option excluderepeats is not used
@@ -206,8 +208,17 @@ program define  ipachecksetup
 		noi disp
 		noi disp "Prefilling HFC Inputs ..."
 
-		if !regex("`outfile'", ".xlsm$") loc outfile = regexr("`outfile'", "`outfile'", "`outfile'.xlsm") 
-		copy "`template'" "`outfile'", `replace'
+		//if !regex("`outfile'", ".xlsm$") loc outfile = regexr("`outfile'", "`outfile'", "`outfile'.xlsm") 
+		loc outfile = regexr("`outfile'", ".xlsm", "")
+		loc outfile =  "`outfile'.xlsm"
+
+
+		if "`template'"!="" {
+			copy "`template'" "`outfile'", `replace'
+		}
+		else {
+			copy "`git_hfc'/`branch'/xlsx/hfc_inputs.xlsm" "`outfile'", `replace'
+		}
 		
 		*00. setup
 		clear
@@ -250,30 +261,63 @@ program define  ipachecksetup
 		
 		*01. incomplete
 		if "`incomplete'"!="" {
-			use `_survey', clear
-			if wordcount("`incomplete'")==2 {
-				g complete_value= word("`incomplete'", 2)
-				g incomplete = word("`incomplete'", 1)
+			clear
+				g complete_value = ""
+				g name = ""
 				g complete_percent = 100
-				keep if incomplete==newname
-
-				if _N == 0 {
-					noi di as err "`= word("`incomplete'", 1)' does not exist"
-					exit 111
+				
+			gettoken inc irest : incomplete, parse(",")
+			
+			loc i=1
+			while `"`inc'"' != "" {
+			if `"`inc'"' != "," {
+				set obs `i'
+				loc ivarname   : word 1 of `inc'
+				local ivarvalue   : word 2 of `inc'			
+				replace  name   = "`ivarname'" in `i'
+				replace  complete_value   = "`ivarvalue'"  in `i'	
 				}
+				gettoken inc irest : irest, parse(",")
+				loc ++i
+			}
+			drop if mi(name) & mi(complete_value)
+			duplicates drop name complete_value, force
+
+			tempfile incomp
+			save `incomp'
+			
+			use `_survey', clear
+			merge m:1 name using `incomp', gen(mergeincomp)
+
+			* Check if variables exist
+			levelsof name if mergeincomp==2, local(incomplist) clean
+			count if mergeincomp==2	
+				if r(N)>0 {
+					noi di as err "`incomplist' does not exist"
+					exit 111	
+				}		
+
+			keep if mergeincomp==3
 
 				if _N > 0 {
-				* export variable and value to consent sheet
+				* export variable and value to incomplete sheet
+				export excel name `label' complete_value complete_percent using "`outfile'", 							///
+						sheet("1. incomplete") sheetmodify cell(A2)
+				noi disp "... 1. incomplete complete"
+				}		
+		}
+
+		if "`incomplete'"=="" {
+				use `_survey', clear
+				keep if regex(name, "consent")==1 & regex(type, "select_" "integer" "text")==1
+				
+				if `=_N' > 0 {
+				g complete_value = 1
+				g complete_percent = 100
 				export excel name `label' complete_value complete_percent using "`outfile'", 							///
 						sheet("1. incomplete") sheetmodify cell(A2)
 				noi disp "... 1. incomplete complete"
 				}
-			}
-			else {
-				n di as err "incomplete() wrongly specified."
-				exit 198
-			}
-			
 		}
 
 		*02. duplicates
@@ -365,7 +409,8 @@ program define  ipachecksetup
 				keep if regex(name, "consent")==1 & regex(type, "select_" "integer" "text")==1
 				
 				if `=_N' > 0 {
-				export excel name `label' using "`outfile'", 							///
+				g consent_value = 1
+				export excel name `label' consent_value using "`outfile'", 							///
 				sheet("3. consent") sheetmodify cell(A2)
 				noi disp "... 3. consent complete"
 				}
@@ -599,7 +644,22 @@ program define  ipachecksetup
 			
 			* Export variable names and multiplier
 			if `=_N' > 0 {
-				gen multiplier = "`multiplier'"
+				if "`multiplier'" != "" {
+					loc multiplier = subinstr("`multiplier'", " ", "", .)
+					gettoken val sd : multiplier, parse(",")
+					if `"`=lower(subinstr("`sd'",",","",.))'"' == "sd" {
+						loc sd  `"`=lower(subinstr("`sd'",",","",.))'"' 	
+					}
+					else {
+						loc sd = ""
+					}									
+					gen multiplier = `val'	
+				}
+				else {
+					gen multiplier = 3
+					loc sd = "sd"
+				}
+				
 				export excel name `label' multiplier using "`outfile'", sheet("11. outliers") sheetmodify cell(A2)
 				noi disp "... 11. outliers complete"
 			}
@@ -854,13 +914,22 @@ program define  ipachecksetup
 
 		export excel data using "`outfile'", 							///
 		sheet("0. setup") sheetmodify cell(B4)
+
+		* Export SD 
+		clear 
+		set obs 1
+		g data = "`sd'" in 1 // specify sd or iqr
+		export excel data using "`outfile'", 							///
+		sheet("0. setup") sheetmodify cell(B55)
+		
 		noi disp "... 0. setup complete", _n
 
 		noi disp "Please remember to add and modify the input file before you run HFC." 	
 		noi disp "    - Turn on and off the checks as appropriate" 
 		noi disp "    - Add variables from repeat groups if you are using wide data having repeat groups" 
-		noi disp "    - Add logic checks in the logic sheet", _n		
+		noi disp "    - Add additional logic checks in the logic sheet"
+		noi disp "    - Modify backchecks sheet to specify types of each variable and backcheck options", _n		
 	} 
 
-	noi display `"Your HFC input is saved here {browse "`outfile'":`outfile'}"'
+	noi display `"Your {browse "https://github.com/PovertyAction/high-frequency-checks":IPA HFC input} is saved here {browse "`outfile'":`outfile'}"'
 end

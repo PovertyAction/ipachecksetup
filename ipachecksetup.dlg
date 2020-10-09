@@ -3,26 +3,38 @@
 
 VERSION 12.0
 
-POSITION . . 600 600
+POSITION . . 600 400
 
 DIALOG main, label("ipachecksetup - Prefill IPA Check inputs") tabtitle("Main")
 BEGIN
-  TEXT     tx_xls   10   10	  120	 ., label(Select XLS Form)
-  FILE 	   fl_xls 	10	 +20	580	 ., label(Browse ...) error(select xls form)
-  TEXT     tx_tpl   10   +40  400  ., label(Select HFC inputs template)
-  FILE     fl_tpl   10   +20  580  ., label(Browse ...) error(specify HFC inputs) save
-  TEXT	   tx_out		10	 +40  400	 ., label(Save output as)
-  FILE 	   fl_out		10	 +20  580  ., label(Save As ...) error(specify output file) save
+  TEXT     tx_xls   10   10	  120	 ., label(Select XLS Form*)
+  FILE 	   fl_xls 	10	 +20	580	 ., label(Browse) error(select xls form) filter(*.xls | *.xlsx) dialogtitle(Select XLS Form)
+  TEXT     tx_tpl   10   +40  400  ., label(Select HFC inputs template*)
+  FILE     fl_tpl   10   +20  580  ., label(Browse) error(specify HFC inputs) filter(*.xlsm) dialogtitle(Select IPA HFC template)
+  TEXT	   tx_out		10	 +40  400	 ., label(Save output as*)
+  FILE 	   fl_out		10	 +20  580  ., label(Save As) error(specify output file) save
   CHECKBOX cb_rep   20   +30  .    ., label(replace) option(replace) 
-  FRAME    box_fmt  10   +30  310 100
-    TEXT     tx_fmt   20   +10  .    ., label(Select whether data is in long or wide format)
+  FRAME    box_fmt  10   +30  230 170, error(select eatiher wide or long)
+    TEXT     tx_fmt   20   +10  210    ., label(Select whether data is in long or wide:)
     RADIO    rd_fmt_w 30   +30  100  ., first label("Wide")
-    RADIO    rd_fmt_l @    +20  @    ., last label("Long")
+    RADIO    rd_fmt_l 30   +20  @    ., last label("Long")
+    TEXTBOX     tx_label   20   +30  210    ., label(Specify label language: (keep blank if language not specified in XLSForm))
+    EDIT     st_label 20   +50  210    ., label(Specify label language) 
+   
+  GROUPBOX    box_ins  250   180  330 200, label(Instructions) 
+    TEXT     tx_insone 270   +20  300    ., label(1. Fill in the main tab) 
+    TEXT     tx_instwo 270   +20  300    ., label(2. Fill in the advanced tab for other options)
 END
 
 DIALOG advanced, label("test") tabtitle("Advanced")
 BEGIN
-  TEXT     tx_test   10   10   120  ., label(Select XLS Form)
+  GROUPBOX    gbox_ad  10   10  200 110, label("Specify missing values")
+    SPINNER   dk   120   +30   60    ., label(Don't know:) tooltip("Default is -999") default(-999) min(-9999999)
+    TEXT   tx_dk   20   @   100    ., label(Don't know:) 
+    SPINNER   osp   120   +20   60    ., label(Others specify:) tooltip("Default is -666") default(-666) min(-9999999)
+    TEXT   tx_osp   20   @   100    ., label(Others specify:) 
+    SPINNER   rf   120   +20   60    ., label(Refusal:) tooltip("Default is -888") default(-888) min(-9999999)
+    TEXT   tx_rf     20   @   100    ., label(Refusal:) 
 END
 
 OK ok1,      label("OK")
