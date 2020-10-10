@@ -46,6 +46,9 @@ program define  ipachecksetup
 	#d cr
 
  	qui {
+ 		tempfile ipachecksetupdata
+ 		save `ipachecksetupdata', emptyok
+
 		loc label  label`label'
 
 		* Setup URL
@@ -936,4 +939,6 @@ program define  ipachecksetup
 	} 
 
 	noi display `"Your {browse "https://github.com/PovertyAction/high-frequency-checks":IPA HFC input} is saved here {browse "`outfile'":`outfile'}"'
+
+	u `ipachecksetupdata', clear
 end

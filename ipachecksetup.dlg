@@ -49,26 +49,35 @@ COPY copy1
 
 PROGRAM command
 BEGIN
+    * Program start
     put "ipachecksetup using "
    
     require main.fl_xls 
     put `"""' main.fl_xls `"""' 
 	 
-    
+    * Outfile
     put ", outfile("
     require  main.fl_out
     put `"""' main.fl_out `"""' 
     
+    * Prefix
     put ") prefix("
     require main.st_prefix
     put main.st_prefix
     put ") " 
 
+    * Template
     if (main.fl_tpl) {
       put " template("
       put `"""'  main.fl_tpl `"""' ")" 
     }
 
+
+    * Label
+    if (main.st_label) {
+      put " label("
+      put `"""' main.st_label `"""' ")"
+    }
 
         option main.cb_rep
         option main.rd_fmt_w
