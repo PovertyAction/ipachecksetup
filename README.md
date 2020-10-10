@@ -52,7 +52,7 @@ To open dialogue box, type: ``db ipachecksetup``
  | <ins>ref</ins>usal |  Missing value for refusal. Only allows real number, if not specified -888 is assumed. | 
  | <ins>dontk</ins>now | Missing value for don't know. Only allows real number, if not specified -999 is assumed. | 
  | consent |  Comma separated variables along with consent values. ``consent(consent 1, phone_response 1)``. If not specified, the program searches for any variable having "consent" in the name, and assumes it to be consent variable and 1 as consent value. | 
- | id  |  Survey ID. | 
+ | id  |  Survey ID. varlist allowed. | 
  | enumid   |  Enumerator ID. | 
  | teamid  |  Enumerator Team ID. | 
  | incomplete  |  Comma separated variables along with complete value. ``incomplete(consent 1, phone_response 1)``. If not specified, the program searches for any variable having "consent" in the name, and assumes it to be incomplete variable and 1 as complete value. | 

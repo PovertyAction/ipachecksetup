@@ -214,12 +214,14 @@ program define  ipachecksetup
 		//if !regex("`outfile'", ".xlsm$") loc outfile = regexr("`outfile'", "`outfile'", "`outfile'.xlsm") 
 		loc outfile = regexr("`outfile'", ".xlsm", "")
 		loc outfile =  "`outfile'.xlsm"
-
+		loc outfile = subinstr("`outfile'", "\", "/", .)
+		loc outfolder = reverse(substr(reverse("`outfile'"),strpos(reverse("`outfile'"), "/"), . ))
 		if "`template'"!="" {
 			copy "`template'" "`outfile'", `replace'
 		}
 		else {
-			if "`replace'" == "" {
+			cap confirm file "`outfile'"
+			if "`replace'" == "" & !_rc {
 				noi di as err "file `outfile' already exists"
 				exit 602
 			}
@@ -232,24 +234,26 @@ program define  ipachecksetup
 		*00. setup
 		clear
 		set obs 40
+		loc survey = subinstr("`survey'", "\", "/", .)
+		loc media = subinstr("`media'", "\", "/", .)
 		gen		data = "`survey'" 			in 1  // Dataset
 		replace data = "`backcheck'" 		in 2 // BC dataset
 		replace data = "`media'" 			in 4 // Media folder
 
 		replace data = "`outfile'" 			in 7 // HFC & BC input file name
-		loc outfile_dup = "prefix" + "_duplicates.xlsx"
-		loc outfile_hfc = "prefix" + "_HFC_output.xlsx"
-		loc outfile_enum = "`prefix'" + "_enumdb.xlsx"
-		loc outfile_text = "`prefix'" + "_text.xlsx"
-		loc outfile_r = "`prefix'" + "_research.xlsx"
+		loc outfile_dup = "`outfolder'`prefix'" + "_duplicates.xlsx"
+		loc outfile_hfc = "`outfolder'`prefix'" + "_HFC_output.xlsx"
+		loc outfile_enum = "`outfolder'`prefix'" + "_enumdb.xlsx"
+		loc outfile_text = "`outfolder'`prefix'" + "_text.xlsx"
+		loc outfile_r = "`outfolder'`prefix'" + "_research.xlsx"
 
 		replace data = "`outfile_hfc'" 		in 12 //  file name
 		replace data = "`outfile_enum'" 	in 13 // enumdb file name
 		replace data = "`outfile_text'" 	in 14 // text audit file name
 		replace data = "`outfile_dup'" 		in 16 // duplicate file name
 		if "`backcheck'"!="" {
-			loc outfile_bc = "`prefix'" + "_bc.xlsx"
-			replace data = "`outfile_bc'" 	in 17 // duplicate file name
+			loc outfile_bc = "`outfolder'/`prefix'" + "_bc.xlsx"
+			replace data = "`outfile_bc'" 	in 17 // backcheck file name
 		}
 		replace data = "`outfile_r'" 		in 18 // research file name
 		replace data = "submissiondate" 	in 22 // Submissiondate
@@ -329,42 +333,37 @@ program define  ipachecksetup
 
 		*02. duplicates
 		if "`id'"!="" {
+			clear
+			gen name = ""
+
+			loc i=1
+			foreach varname of local id {
+				set obs `i'
+				replace name = "`varname'" in `i'
+				loc ++i
+			}
+
+			drop if mi(name)
+			duplicates drop name, force
+			tempfile sid
+			save `sid'
+
 			use `_survey', clear
-			gettoken arg rest : id, parse(",")
-			local comb   : word 2 of `rest'
-			gl surveyid = "`arg'"
-			* Check if variables exist
-			foreach var of local arg {
-				count if newname == "`var'"
-				if r(N)==0 {
-					noi di as err "`var' does not exist"
+			merge m:1 name using `sid', gen(mergeids)
+
+			levelsof name if mergeids==2, local(idlist) clean
+			count if mergeids==2	
+				if r(N)>0 {
+					noi di as err "`idlist' does not exist"
 					exit 111	
-				}
-				
-			}
+				}		
 
+			keep if mergeids==3
 
-			if lower(stritrim("`comb'"))!="comb" & lower(stritrim("`comb'"))!="" {
-				n di as err "id() wrongly specified."
-				exit 198
-			}
-
-			if  lower(stritrim("`comb'"))==""  {
-				loc arg = stritrim("`arg'")
-				loc arg = ustrregexra("`arg'", " ", "|")
-				export excel name `label' if regex(newname, "^(`arg')$")==1  using "`outfile'", 							///
-				sheet("2. duplicates") sheetmodify cell(A2)
-				noi disp "... 2. duplicates complete"
-			}
-		
-			if lower(stritrim("`comb'"))=="comb" {
-				clear 
-				set obs 1
-				gen name = stritrim("`arg'")
-				export excel name using "`outfile'", 							///
-				sheet("2. duplicates") sheetmodify cell(A2)
-				noi disp "... 2. duplicates complete"
-			}
+			export excel name `label' using "`outfile'", 							///
+			sheet("2. duplicates") sheetmodify cell(A2)
+			noi disp "... 2. duplicates complete"
+			
 		}
 		*03. consent
 
@@ -917,7 +916,7 @@ program define  ipachecksetup
 		}
 
 		u `setup', clear
-		replace data = "$surveyid" in 23 // unique ID
+		replace data = "key" in 23 // unique ID
 
 		export excel data using "`outfile'", 							///
 		sheet("0. setup") sheetmodify cell(B4)
