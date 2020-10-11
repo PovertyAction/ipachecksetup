@@ -61,7 +61,7 @@ BEGIN
     TEXT      tx_btid   -100   +30  90    40, label(BC Team ID)
     EDIT      st_btid   +100   @  80    ., label(BC Team ID) 
 
-  GROUPBOX    gbox_con  10   +60  200   110, label("Constraints")
+  GROUPBOX    gbox_con  10   +60  200   110, label("Constraints and outliers")
     TEXT      tx_mul    20   +20  70    ., label(Multiplier) 
     EDIT      mul       80    @   50    ., label(Multiplier) tooltip("Default is 3") default(3)  numonly
     CHECKBOX  cb_sd    140    @   .     ., label("    SD") default(1)
