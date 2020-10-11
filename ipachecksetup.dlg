@@ -23,9 +23,10 @@ BEGIN
     TEXTBOX     tx_label   20   +30  210    40, label(Specify label language: (keep blank if language not specified in XLSForm))
     EDIT     st_label 20   +50  210    ., label(Specify label language) 
    
-  GROUPBOX    box_ins  250   230  330 210, label(Instructions) 
+  GROUPBOX    box_ins  250   230  330 250, label(Instructions) 
     TEXTBOX     tx_insone 270   +20  300    ., label(1. Fill in the main tab. HFC inputs template is optional.) 
     TEXTBOX     tx_instwo 270   +20  300 80, label(2. Fill in the advanced tab for other options. All the options are optional.)
+    TEXTBOX     tx_insthr 270   +35  300 50, label(3. Prefix is a short prefix (i.e., project initial) that will be added with the HFC output files.)
     TEXTBOX  tx_insgen 270   +50  300    50, label(Read further about HFC excel input file at IPA github page: https://github.com/PovertyAction/high-frequency-checks)
     TEXTBOX  tx_inspr  270   +60  300    50, label(Read detailed instructions for this program at IPA github page: https://github.com/PovertyAction/ipachecksetup)
 END
