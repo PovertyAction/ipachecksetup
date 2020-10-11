@@ -1,5 +1,4 @@
 v 1.0.0
 d Stata program to setup IPA HFC system
 f ipachecksetup.ado
-f ipachecksetup.pkg
 f ipachecksetup.dlg
