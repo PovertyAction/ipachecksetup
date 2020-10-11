@@ -304,8 +304,8 @@ BEGIN
     }
 
     * Backcheck
-    if advanced.st_btid {
-      put `" bcteamid(""' advanced.fl_bc `"")"'
+    if advanced.fl_bc {
+      put `" backcheck(""' advanced.fl_bc `"")"'
     }
 
     * Reaserch oneway
