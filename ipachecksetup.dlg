@@ -168,21 +168,21 @@ BEGIN
     }
 
     * osp
-    if (advanced.tx_osp) {
+    if (advanced.osp) {
       put " osp("
-      put  advanced.tx_osp ")"
+      put  advanced.osp ")"
     }
 
     * Refusal
-    if (advanced.tx_rf) {
+    if (advanced.rf) {
       put " refusal("
-      put advanced.tx_rf ")"
+      put advanced.rf ")"
     }
 
     * Don't knkow
-    if (advanced.tx_dk) {
+    if (advanced.dk) {
       put " dontknow("
-      put advanced.tx_dk ")"
+      put advanced.dk ")"
     }
 
     * Consent 

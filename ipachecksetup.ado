@@ -932,6 +932,7 @@ program define  ipachecksetup
 
 		noi disp "Please remember to add and modify the input file before you run HFC." 	
 		noi disp "    - Turn on and off the checks as appropriate" 
+		noi disp "    - Locate replacement file and sheet name" 
 		noi disp "    - Add variables from repeat groups if you are using wide data having repeat groups" 
 		noi disp "    - Add additional logic checks in the logic sheet"
 		noi disp "    - Modify backchecks sheet to specify types of each variable and backcheck options", _n		
