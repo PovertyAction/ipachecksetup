@@ -598,10 +598,11 @@ program define  ipachecksetup
 				drop if mi(hardmin) & mi(hardmax)
 
 				* export variable names, `label', constraints to first column A
-			
+				if `=_N' > 0 {
 				export excel name `label' constraint hardmin softmin softmax hardmax using "`outfile'", ///
 					sheet("8. constraints") sheetmodify cell(A2)
 				noi disp "... 8. constraint complete"
+			 	}
 			}
 			
 		* 9. specify
