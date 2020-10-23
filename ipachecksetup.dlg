@@ -296,7 +296,7 @@ BEGIN
 
     * BCID
     if advanced.st_beid {
-      put " backcheck(" advanced.st_beid ")"
+      put " bcid(" advanced.st_beid ")"
     }
 
     * BC Team ID
