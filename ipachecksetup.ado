@@ -532,6 +532,12 @@ program define  ipachecksetup
 					loc repeat `=_rc'
 					drop sub
 				}
+
+				/* * change repeat group var to var_1 if wide is specified
+				if "`wide'" != "" {
+
+				} */
+
 				* change selected and selected-at with regexm
 				replace `var' = subinstr(`var', "count-selected", "wordcount", .)
 				replace `var' = subinstr(`var', "selected-at", "regexm(string", .)
@@ -636,7 +642,7 @@ program define  ipachecksetup
 			set obs 1
 			gen start = "`startvar'"			
 			gen end = "`endvar'"	
-			gen surveystart = "`surveystart'"
+			gen surveystart =  `"`=date("`surveystart'", "MDY")'"' 
 			* Export date variables
 			export excel start end surveystart using "`outfile'", sheet("10. dates") sheetmodify cell(A2)
 			
