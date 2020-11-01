@@ -30,6 +30,12 @@ Turning on and off
 For repeat group add the _1 variable and add a note that for further variables, add manually - Done
 What should we do for long data. A long term question, and should wait untill we solve the HFC input problem first.
 
+
+New list:
+1. Logic repeat in if_condition
+2. ResearchDB * does not work
+3. Check uid vs key
+
 */
 
 version 	12.0
@@ -197,6 +203,13 @@ program define  ipachecksetup
 			replace name_log = name + "_1" if rpt_grp_var
 			replace name = name + "*" if rpt_grp_var
 			
+			levelsof name_log if rpt_grp_var, local(rpt_vars)
+
+			foreach var of local rpt_vars {
+				local bvar = subinstr("`var'", "_1", "", .)
+				replace relevance = subinstr(relevance, "`bvar'", "`var'", .)
+			}
+
 		}
 
 
@@ -785,7 +798,7 @@ program define  ipachecksetup
 			keep if type == "integer" | type == "decimal" | regexm(type, "select_one") 
 			if `=_N' > 0 {
 				
-				gen category = cond(type == "integer" | type == "decimal", "cont", cond(regexm(type, "yesno")|regexm(type, "yn"), "bin", "cat"))
+				gen category = cond(type == "integer" | type == "decimal", "contn", cond(regexm(type, "yesno")|regexm(type, "yn"), "bin", "cat"))
 
 				*Common things you don't want in the research tab
 				drop if regexm(type, "name") | regexm(type, "id") | regexm(type, "team")
