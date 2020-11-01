@@ -239,7 +239,7 @@ program define  ipachecksetup
 				exit 602
 			}
 			else{
-				copy "`git_hfc'/`branch'/xlsx/hfc_inputs.xlsm" "`outfile'"	
+				copy "`git_hfc'/`branch'/xlsx/hfc_inputs.xlsm" "`outfile'", `replace'
 			}
 			
 		}
@@ -962,3 +962,5 @@ program define  ipachecksetup
 
 	u `ipachecksetupdata', clear
 end
+
+
