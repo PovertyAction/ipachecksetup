@@ -5,7 +5,7 @@
 ``ipachecksetup`` is a stata program that prefills the IPA HFC excel inputs template automatically for a survey. ``ipachecksetup`` takes the IPA HFC excel input template and fill in the template using the SurveyCTO questionnaire XLSForm. This program produces an HFC excel input file, however, further edits are required such as adding logic checks those did not exist in the SurveyCTO form. The program does not fill in Progress Report specifics which will require manual modification. Read further about HFC excel input file at <a href="https://github.com/PovertyAction/high-frequency-checks" target="_blank">IPA github page</a>.
 
 
-## Installaion
+## Installation
 ```stata
 * ipachecksetup can be installed from github
 
