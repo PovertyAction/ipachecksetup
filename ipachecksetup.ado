@@ -34,12 +34,12 @@ What should we do for long data. A long term question, and should wait untill we
 New list:
 1. Logic repeat in if_condition - done
 2. ResearchDB * does not work - added _1 suffix
-3. Check uid vs key: Added uid removed key, id will give error if does not exist, but will not break.
+3. Check uid vs key: Added uid removed key, id will give error if does not exist, but will not break. - Done
 4. Long vs wide : remove * if wide, add repeat vars if wide [really?]
 5. Does backcheck have repeat variable issues?
-6. Removed ID from follow up
-7. Add exclude variables in enumdb
-8. No miss should exclude group relevances
+6. Removed ID from follow up - Done
+7. Add exclude variables in enumdb - Done
+8. No miss should exclude group relevances - Done
 
 */
 
@@ -175,6 +175,8 @@ program define  ipachecksetup
 					}
 					else {
 						if "`gtype'" == "grp" replace grp_var = 1 in `curr_sn'
+						if "`gtype'" == "grp" replace relevance = relevance + " and ("+ relevance[`_sn'] + ")"  in `curr_sn'
+						if "`gtype'" == "grp" replace relevance = regexr(relevance, "^ and ", "")
 						if "`gtype'" == "rpt_grp" replace rpt_grp_var = 1 in `curr_sn'
 						cap assert regexm(type, "^(begin)") & regexm(type, "group|repeat") in `curr_sn'
 						if !_rc loc ++b
@@ -185,6 +187,7 @@ program define  ipachecksetup
 				replace begin_fieldname =	name[`_sn']		in `_sn'
 				replace end_row 		= 	_sn[`end']		in `_sn'
 				replace end_fieldname 	=	name[`end']		in `_sn'
+				
 
 			}
 
@@ -193,7 +196,7 @@ program define  ipachecksetup
 
 			//replace name_log = subinstr(name, "_1", "", .) if (regexm(type, "^(begin)") & regexm(type, "group|repeat")) in `curr_sn'
 			replace name = subinstr(name, "*", "", .) if (regexm(type, "^(begin)") & regexm(type, "group|repeat")) in `curr_sn'
-			replace relevance = relevance + " and ("+ relevance[`_sn'] + ")" if (regexm(type, "^(begin)") & regexm(type, "group|repeat")) in `curr_sn'
+			
 		}
 		
 		gen newname = name
@@ -375,7 +378,8 @@ program define  ipachecksetup
 			levelsof name if mergeids==2, local(idlist) clean
 			count if mergeids==2	
 				if r(N)>0 {
-					noi di as err "`idlist' does not exist" 
+					noi di as err "Variable(s) `idlist' does not exist, but added in setup sheet."
+					noi di as result "", _n
 					sleep 200
 					//exit 111	// Will not break now, but will give a warning.
 				}		
@@ -783,6 +787,15 @@ program define  ipachecksetup
 		export excel sub using "`outfile'", sheet("enumdb") sheetmodify cell(G2)
 		noi disp "... enumdb complete"
 
+		* Export excludevars variables
+		use `_survey', clear
+		keep if !regexm(type, "select|calculate|group|repeat|note|integer|decimal|date|geo|text|caseid")
+		set obs `=_N+3'
+		replace name = "formdef_version" in `=_N-2'
+		replace name = "submissiondate" in `=_N-1'
+		replace name = "key" in `=_N'
+		cap export excel name using "`outfile'", sheet("enumdb") sheetmodify cell(F2)
+
 		* research oneway
 		if "`r1'"!="" {
 			use `_survey', clear
@@ -962,11 +975,12 @@ program define  ipachecksetup
 		noi disp "... 0. setup complete", _n
 
 		noi disp "Please remember to add and modify the input file before you run HFC." 	
-		noi disp "    - Turn on and off the checks as appropriate" 
-		noi disp "    - Locate replacement file and sheet name" 
-		noi disp "    - Add variables from repeat groups if you are using wide data having repeat groups" 
-		noi disp "    - Add additional logic checks in the logic sheet"
-		noi disp "    - Modify backchecks sheet to specify types of each variable and backcheck options", _n		
+		noi disp "    1) Turn on and off the checks as appropriate" 
+		noi disp "    2) Locate replacement file and sheet name" 
+		noi disp "    3) Setup follow up sheet if needed"
+		noi disp "    4) Add variables from repeat groups if you are using wide data having repeat groups" 
+		noi disp "    5) Add additional logic checks in the logic sheet"
+		noi disp "    6) Modify backchecks sheet to specify types of each variable and backcheck options", _n		
 	} 
 
 	noi display `"Your {browse "https://github.com/PovertyAction/high-frequency-checks":IPA HFC input} is saved here {browse "`outfile'":`outfile'}"'
