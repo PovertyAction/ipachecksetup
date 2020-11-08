@@ -32,9 +32,14 @@ What should we do for long data. A long term question, and should wait untill we
 
 
 New list:
-1. Logic repeat in if_condition
-2. ResearchDB * does not work
-3. Check uid vs key
+1. Logic repeat in if_condition - done
+2. ResearchDB * does not work - added _1 suffix
+3. Check uid vs key: Added uid removed key, id will give error if does not exist, but will not break.
+4. Long vs wide : remove * if wide, add repeat vars if wide [really?]
+5. Does backcheck have repeat variable issues?
+6. Removed ID from follow up
+7. Add exclude variables in enumdb
+8. No miss should exclude group relevances
 
 */
 
@@ -128,6 +133,7 @@ program define  ipachecksetup
 		gen end_row			= .
 		gen end_fieldname 	= ""
 		gen name_log		= name
+		gen grp_rel			= ""
 
 		if `r(N)' > 0 {
 			
@@ -179,6 +185,7 @@ program define  ipachecksetup
 				replace begin_fieldname =	name[`_sn']		in `_sn'
 				replace end_row 		= 	_sn[`end']		in `_sn'
 				replace end_fieldname 	=	name[`end']		in `_sn'
+
 			}
 
 			replace grp_var 	= 0 if missing(grp_var)
@@ -186,6 +193,7 @@ program define  ipachecksetup
 
 			//replace name_log = subinstr(name, "_1", "", .) if (regexm(type, "^(begin)") & regexm(type, "group|repeat")) in `curr_sn'
 			replace name = subinstr(name, "*", "", .) if (regexm(type, "^(begin)") & regexm(type, "group|repeat")) in `curr_sn'
+			replace relevance = relevance + " and ("+ relevance[`_sn'] + ")" if (regexm(type, "^(begin)") & regexm(type, "group|repeat")) in `curr_sn'
 		}
 		
 		gen newname = name
@@ -367,11 +375,14 @@ program define  ipachecksetup
 			levelsof name if mergeids==2, local(idlist) clean
 			count if mergeids==2	
 				if r(N)>0 {
-					noi di as err "`idlist' does not exist"
-					exit 111	
+					noi di as err "`idlist' does not exist" 
+					sleep 200
+					//exit 111	// Will not break now, but will give a warning.
 				}		
 
-			keep if mergeids==3
+			//keep if mergeids==3 
+
+			keep if mergeids!=1 
 
 			export excel name `label' using "`outfile'", 							///
 			sheet("2. duplicates") sheetmodify cell(A2)
@@ -470,7 +481,7 @@ program define  ipachecksetup
 				sheet("4. no miss") sheetmodify cell(A2)
 		noi disp "... 4. no miss complete"
 		
-		* 05. followup
+		/* * 05. followup
 		if "`id'"!="" {
 			use `_survey', clear
 			gettoken arg rest : id, parse(",")
@@ -492,7 +503,7 @@ program define  ipachecksetup
 				noi disp "... 5. follow up complete"
 			}
 		
-		}
+		} */
 
 
 		* 06. logic
@@ -776,7 +787,7 @@ program define  ipachecksetup
 		if "`r1'"!="" {
 			use `_survey', clear
 			foreach var of local r1 {
-				count if newname == "`var'"
+				count if name == "`var'"
 				if r(N)==0 {
 					noi di as err "`var' does not exist"
 					exit 111	
@@ -787,7 +798,7 @@ program define  ipachecksetup
 			loc r1 = ustrregexra("`r1'", " ", "|")
 			gen vartype="contn" if inlist(type, "integer", "decimal", "calculate")
 			replace vartype="cat" if regex(type, "select_")==1 
-			export excel name `label' vartype if regex(newname, "^(`r1')$")==1  using "`outfile'", 							///
+			export excel name_log `label' vartype if regex(newname, "^(`r1')$")==1  using "`outfile'", 							///
 			sheet("research oneway") sheetmodify cell(A2)
 			noi disp "... research oneway complete"
 		}
@@ -803,7 +814,7 @@ program define  ipachecksetup
 				*Common things you don't want in the research tab
 				drop if regexm(type, "name") | regexm(type, "id") | regexm(type, "team")
 
-				export excel name `label' category  using "`outfile'", 							///
+				export excel name_log `label' category  using "`outfile'", 							///
 				sheet("research oneway") sheetmodify cell(A2)
 
 			}
@@ -831,7 +842,7 @@ program define  ipachecksetup
 			* Varlist
 			loc arg = stritrim("`arg'")
 			loc arg = ustrregexra("`arg'", " ", "|")
-			export excel name `label' vartype varby if regex(newname, "^(`arg')$")==1  using "`outfile'", 							///
+			export excel name_log `label' vartype varby if regex(newname, "^(`arg')$")==1  using "`outfile'", 							///
 			sheet("research twoway") sheetmodify cell(A2)
 			noi disp "... research twoway complete"
 		
@@ -936,7 +947,7 @@ program define  ipachecksetup
 		}
 
 		u `setup', clear
-		replace data = "key" in 23 // unique ID
+		replace data = "`id'" in 23 // unique ID
 
 		export excel data using "`outfile'", 							///
 		sheet("0. setup") sheetmodify cell(B4)
