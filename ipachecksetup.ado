@@ -702,8 +702,10 @@ program define  ipachecksetup
 				}
 				
 				export excel name `label' multiplier using "`outfile'", sheet("11. outliers") sheetmodify cell(A2)
+				mata: multiplier_format("`outfile'", "11. outliers")
 				noi disp "... 11. outliers complete"
 			}
+
 
 		* 13. text_audit
 		use `_survey', clear
@@ -986,6 +988,23 @@ program define  ipachecksetup
 	noi display `"Your {browse "https://github.com/PovertyAction/high-frequency-checks":IPA HFC input} is saved here {browse "`outfile'":`outfile'}"'
 
 	u `ipachecksetupdata', clear
+	
+
 end
 
+
+mata:
+	mata clear
+	void multiplier_format(string scalar filename, string scalar sheet)
+	{
+		class xl scalar b
+		b = xl()
+		b.load_book(filename)
+		b.set_sheet(sheet)
+		rows = (2,100)
+		cols = (3,3)
+		b.set_number_format(rows,cols,"number_sep_d2_negbra")
+	}
+		
+end
 
