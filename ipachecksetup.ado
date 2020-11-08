@@ -385,7 +385,7 @@ program define  ipachecksetup
 				}		
 
 			//keep if mergeids==3 
-
+ 
 			keep if mergeids!=1 
 
 			export excel name `label' using "`outfile'", 							///
