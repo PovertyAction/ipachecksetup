@@ -40,6 +40,12 @@ New list:
 6. Removed ID from follow up - Done
 7. Add exclude variables in enumdb - Done
 8. No miss should exclude group relevances - Done
+9. Constraint repeat group
+
+10. Logic: () as if_condition for empty relevance (there was a group, so check)
+		This happend because I added group relevance, I think.
+		- using search makes varaibles string, but logic thinks it is numeric
+		- Quote signs are delleted from if_condition
 
 */
 
@@ -458,7 +464,7 @@ program define  ipachecksetup
 		
 		* keep only required or scto always generated vars
 		//replace required = lower(required)
-		keep if regexm(required, "[Yy][Ee][Ss]") | inlist(name, "starttime", "endtime", "duration")
+		keep if regexm(required, "[Yy][Ee][Ss]") | inlist(name, "starttime", "endtime", "duration") | (!mi(required) & lower(required)!="no")
 		* drop all notes and fields with no relevance
 		drop if type == "note" | !missing(relevance)
 
@@ -529,7 +535,7 @@ program define  ipachecksetup
 		}
 			
 		* drop all field without relevance
-		drop if missing(relevance) | type == "note" | regexm(type, "group|repeat")
+		drop if missing(relevance) | relevance = "()" | type == "note" | regexm(type, "group|repeat")
 		if `=_N' > 0 {
 			* to cater for no spaces in programming, add white space to either side of =
 			* trim excess whitespace, change = to ==
@@ -561,11 +567,6 @@ program define  ipachecksetup
 					drop sub
 				}
 
-				/* * change repeat group var to var_1 if wide is specified
-				if "`wide'" != "" {
-
-				} */
-
 				* change selected and selected-at with regexm
 				replace `var' = subinstr(`var', "count-selected", "wordcount", .)
 				replace `var' = subinstr(`var', "selected-at", "regexm(string", .)
@@ -577,10 +578,7 @@ program define  ipachecksetup
 				
 			}
 
-			* add relevance to if condition
-			replace if_condition = if_condition + " & (" + relevance + ")" if !missing(if_condition)
-			replace if_condition = relevance if missing(if_condition)
-				
+					
 			* generate assertion. Assert for non-missing in all. Manual edits will be needed for addional
 			* assertions required
 			gen assertion = name_log + " == ."  if regexm(type, "integer|select_one")
@@ -1001,9 +999,9 @@ mata:
 		b = xl()
 		b.load_book(filename)
 		b.set_sheet(sheet)
-		rows = (2,100)
+		rows = (2,.)
 		cols = (3,3)
-		b.set_number_format(rows,cols,"number_sep_d2_negbra")
+		b.set_number_format(rows,cols,"number_d2")
 	}
 		
 end
