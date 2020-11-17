@@ -77,19 +77,19 @@ To open dialogue box, type: ``db ipachecksetup``
 ipachecksetup using "Endline Survey.xlsx", ///
 	template("hfc_inputs.xlsm") ///
 	outfile("hfc_inputs_endline.xlsm") ///
-	long 
+	long prefix("IPA")
 
 * Wide Formatted Dataset
 ipachecksetup using "Endline Survey.xlsx", ///
 	template("hfc_inputs.xlsm") ///
 	outfile("hfc_inputs_endline.xlsm") ///
-	wide
+	wide prefix("IPA")
 
 * Using all options
 ipachecksetup using "ipa_yop_2017_short_DRAFT.xlsx", ///
 	template("hfc_inputs.xlsm") ///
 	outfile("hfc_inputs_yop") 	///
-	wide replace ///
+	wide replace prefix("YOP") ///
 		label(English) ///
 		osp(-96) ref(-98) dontk(-99)  ///
 		softmin(15) softmax(40) mul(1.3, sd) ///

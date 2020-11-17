@@ -41,11 +41,11 @@ New list:
 7. Add exclude variables in enumdb - Done
 8. No miss should exclude group relevances - Done
 9. Constraint repeat group
-
-10. Logic: () as if_condition for empty relevance (there was a group, so check)
-		This happend because I added group relevance, I think.
-		- using search makes varaibles string, but logic thinks it is numeric
-		- Quote signs are delleted from if_condition
+10. Logic:
+		- Group relevane came twice for nested groups (not programmatically a problem, though)- 186
+		- using search makes varaibles string, but logic thinks it is numeric - Only solution is to change in the form, make string
+		- Quote signs are deleted from if_condition
+		- Check when to add double quote
 
 */
 
@@ -181,7 +181,11 @@ program define  ipachecksetup
 					}
 					else {
 						if "`gtype'" == "grp" replace grp_var = 1 in `curr_sn'
-						if "`gtype'" == "grp" replace relevance = relevance + " and ("+ relevance[`_sn'] + ")"  in `curr_sn'
+						loc grouprel = "(" + relevance[`_sn'] + ")"
+
+						if "`gtype'" == "grp" &  !mi(relevance[`_sn'])  /// 
+								replace relevance = relevance + " and ("+ relevance[`_sn'] + ")" if !regexm(relevance, "`grouprel'") ///
+													in `curr_sn' 
 						if "`gtype'" == "grp" replace relevance = regexr(relevance, "^ and ", "")
 						if "`gtype'" == "rpt_grp" replace rpt_grp_var = 1 in `curr_sn'
 						cap assert regexm(type, "^(begin)") & regexm(type, "group|repeat") in `curr_sn'
@@ -518,7 +522,7 @@ program define  ipachecksetup
 
 		* 06. logic
 		use `_survey', clear
-		
+
 		* Add group|repeat relevance to individual field within groups
 
 		gen if_condition = ""
@@ -530,12 +534,28 @@ program define  ipachecksetup
 			loc start 	= _sn[`group']
 			loc end 	= _sn[`group']
 			loc relevance = relevance[`start']
-			replace if_condition = if_condition + "\(" + "`relevance'" + ")" in `start'/`end'
+			replace if_condition = if_condition + "\(" + "`relevance'" + ")" in `start'/`end' if !regexm(if_condition, "`relevance'")
 			drop n
-		}
+		} 
+			* add relevance to if condition
+			//replace if_condition = if_condition + " & \(" + relevance + "\)" if !missing(if_condition)
+			replace if_condition = relevance if missing(if_condition)
+			replace if_condition = subinstr(if_condition, "and ()", "", .)
+
+		* Dropping all logic related to string fields temporarily as the DMS cannot work with string logics
+			levelsof name if type=="text" | regexm(type, "multiple") | regexm(appearance, "search")  ///
+							| regexm(relevance, "string\("), ///
+							loc(stringfield) clean
 			
+			g stringtag = .
+			foreach field of local stringfield {
+				replace stringtag = 1 if  regexm(relevance, "`field'")
+			}
+			
+			drop if stringtag==1
+
 		* drop all field without relevance
-		drop if missing(relevance) | relevance = "()" | type == "note" | regexm(type, "group|repeat")
+		drop if missing(relevance) | relevance == "()" | type == "note" | regexm(type, "group|repeat")
 		if `=_N' > 0 {
 			* to cater for no spaces in programming, add white space to either side of =
 			* trim excess whitespace, change = to ==
@@ -578,7 +598,8 @@ program define  ipachecksetup
 				
 			}
 
-					
+			
+				
 			* generate assertion. Assert for non-missing in all. Manual edits will be needed for addional
 			* assertions required
 			gen assertion = name_log + " == ."  if regexm(type, "integer|select_one")
@@ -999,7 +1020,7 @@ mata:
 		b = xl()
 		b.load_book(filename)
 		b.set_sheet(sheet)
-		rows = (2,.)
+		rows = (2,100)
 		cols = (3,3)
 		b.set_number_format(rows,cols,"number_d2")
 	}
