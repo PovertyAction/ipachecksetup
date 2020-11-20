@@ -1,4 +1,4 @@
-# ipaCHECKSETUP
+# IPACHECKSETUP
 
 ## Overview
 
