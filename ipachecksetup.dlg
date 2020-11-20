@@ -3,18 +3,20 @@
 
 VERSION 12.0
 
-POSITION . . 600 510
+POSITION . . 600 530
 
 DIALOG main, label("ipachecksetup - Prefill IPA Check inputs") tabtitle("Main")
 BEGIN
-  TEXT     tx_xls   10   10	  120	 ., label(Select XLS Form*)
+  TEXT     tx_xls   10   10	  120	 ., label(Select XLS Form)
   FILE 	   fl_xls 	10	 +20	580	 ., label(Browse) error(select xls form)  dialogtitle(Select XLS Form) 
-  TEXT     tx_tpl   10   +30  400  ., label(Select HFC inputs template)
+  TEXT     tx_tpl   10   +30  400  ., label(Select HFC inputs template (Optional))
   FILE     fl_tpl   10   +20  580  ., label(Browse)  dialogtitle(Select IPA HFC template)
-  TEXT	   tx_out		10	 +30  400	 ., label(Save output as*)
+  TEXT	   tx_out		10	 +30  400	 ., label(Save filled IPA HFC input file as)
   FILE 	   fl_out		10	 +20  580  ., label(Save As) error(specify output file) save
+  TEXT     tx_outf  10   +30  400  ., label(HFC ouput folder (Optional))  
+  FILE     fl_outf  10   +20  580  ., label(Save As) error(specify output file) directory tooltip("HFC output files will be saved here.") dialogtitle(HFC output folder) 
   CHECKBOX cb_rep   20   +40  .    ., label(replace) option(replace) 
-  TEXT     tx_pre   250   @  .  ., label(Prefix*) 
+  TEXT     tx_pre   250   @  .  ., label(Prefix) 
   EDIT     st_prefix 300   @  210    ., label(Prefix) 
   FRAME    box_fmt  10   +80  230 170, error(select eatiher wide or long)
     TEXT     tx_fmt   20   +10  210    ., label(Select whether data is in long or wide:)
@@ -23,15 +25,15 @@ BEGIN
     TEXTBOX     tx_label   20   +30  210    40, label(Specify label language: (keep blank if language not specified in XLSForm))
     EDIT     st_label 20   +50  210    ., label(Specify label language) 
    
-  GROUPBOX    box_ins  250   230  330 250, label(Instructions) 
-    TEXTBOX     tx_insone 270   +20  300    ., label(1. Fill in the main tab. HFC inputs template is optional.) 
+  GROUPBOX    box_ins  250   260  330 260, label(Instructions) 
+    TEXTBOX     tx_insone 270   +20  300    ., label(1. Fill in the main tab. HFC inputs template and HFC ouput folder are optional.) 
     TEXTBOX     tx_instwo 270   +20  300 80, label(2. Fill in the advanced tab for other options. All the options are optional.)
     TEXTBOX     tx_insthr 270   +35  300 50, label(3. Prefix is a short prefix (i.e., project initial) that will be added with the HFC output files.)
     TEXTBOX  tx_insgen 270   +50  300    50, label(Read further about HFC excel input file at IPA github page: https://github.com/PovertyAction/high-frequency-checks)
-    TEXTBOX  tx_inspr  270   +60  300    50, label(Read detailed instructions for this program at IPA github page: https://github.com/PovertyAction/ipachecksetup)
+    TEXTBOX  tx_inspr  270   +60  300    65, label(Read detailed instructions for this program at IPA github page: https://github.com/PovertyAction/ipachecksetup or click help button)
 END
 
-DIALOG advanced, label("test") tabtitle("Advanced")
+DIALOG advanced, label("options") tabtitle("Advanced")
 BEGIN
   GROUPBOX    gbox_path  10   10  580 110, label("Files and folders")
     TEXT   tx_su   20   +20   200    ., label(Select survey dataset) 
@@ -41,16 +43,18 @@ BEGIN
     TEXT   tx_bc   20   +30   200    ., label(Select backcheck XLSForm) 
     FILE   fl_bc   180   @   400  ., label(Browse)  dialogtitle(Select backcheck XLSForm)
 
-  GROUPBOX    gbox_mi  10   +30  200 110, label("Specify missing values")
+  GROUPBOX    gbox_mi  10   +30  200 120, label("Specify missing values")
     SPINNER   dk   120   +30   60    ., label(Don't know:) tooltip("Default is -999") default(-999) min(-9999999)
     TEXT   tx_dk   20   @   100    ., label(Don't know:) 
     SPINNER   osp   120   +20   60    ., label(Others specify:) tooltip("Default is -666") default(-666) min(-9999999)
     TEXT   tx_osp   20   @   100    ., label(Others specify:) 
     SPINNER   rf   120   +20   60    ., label(Refusal:) tooltip("Default is -888") default(-888) min(-9999999)
     TEXT   tx_rf     20   @   100    ., label(Refusal:) 
+    SPINNER   na   120   +20   60    ., label(NA:) tooltip("Default is -222") default(-222) min(-9999999)
+    TEXT   tx_na     20   @   100    ., label(NA:) 
 
-  GROUPBOX    gbox_id  220   -70  370 110, label("ID variables")
-    TEXT      tx_sid   230   +20  90    40, label(Survey ID(s))
+  GROUPBOX    gbox_id  220   -90  370 120, label("ID variables")
+    TEXT      tx_sid   230   +30  90    40, label(Survey ID(s))
     EDIT      st_sid   310   @  80    ., label(Survey ID) 
     TEXT      tx_eid   230   +30  90    40, label(Enumerator ID)
     EDIT      st_eid   310   @  80    ., label(Enumerator ID) 
@@ -62,7 +66,7 @@ BEGIN
     TEXT      tx_btid   -100   +30  90    40, label(BC Team ID)
     EDIT      st_btid   +100   @  80    ., label(BC Team ID) 
 
-  GROUPBOX    gbox_con  10   +60  200   110, label("Constraints and outliers")
+  GROUPBOX    gbox_con  10   +70  200   110, label("Constraints and outliers")
     TEXT      tx_mul    20   +20  70    ., label(Multiplier) 
     EDIT      mul       80    @   50    ., label(Multiplier) tooltip("Default is 3") default(3)  numonly
     CHECKBOX  cb_sd    140    @   .     ., label("    SD") default(1)
@@ -76,7 +80,7 @@ BEGIN
   TEXT    tx_date    10   +35  210    ., label(Survey Start date (MM/DD/YYYY))
   EDIT    ed_date    10   +20  170    ., label(Start date)
 
-  GROUPBOX    gbox_cons  220   230  170   170, label("Consent variables and values")
+  GROUPBOX    gbox_cons  220   250  170   170, label("Consent variables and values")
     TEXT      tx_con    230   +20  50    ., label(Variable)
     TEXT      tx_con_v  300    @   40    ., label(Value) 
     EDIT      con_i       230   +20  70    ., label(con_1)
@@ -92,7 +96,7 @@ BEGIN
     EDIT      con_vi       230   +20  70    ., label(con_6)
     EDIT      con_v_vi     300    @   50    ., label(consent value 6) 
 
-  GROUPBOX    gbox_comp  400   230  190   170, label("Complete variables and values")
+  GROUPBOX    gbox_comp  400   250  190   170, label("Complete variables and values")
     TEXT      tx_com    420   +20  50    ., label(Variable)
     TEXT      tx_com_v  480    @   40    ., label(Value) 
     EDIT      com_i       420   +20  70    ., label(com_1)
@@ -120,7 +124,7 @@ END
 
 OK ok1,      label("OK")
 CANCEL can1, label("Cancel")
-HELP hlp1,   view("help ipachecksetup")
+HELP hlp1,   view (browse "https://github.com/PovertyAction/ipachecksetup") 
 SUBMIT sub1, label("Submit")
 RESET res1
 COPY copy1
@@ -146,6 +150,12 @@ BEGIN
     if (main.fl_tpl) {
       put " template("
       put `"""'  main.fl_tpl `"""' ")" 
+    }
+
+    * Outfolder
+    if (main.fl_outf) {
+      put " outfolder("
+      put `"""'  main.fl_out `"""' ")" 
     }
 
 
@@ -179,10 +189,16 @@ BEGIN
       put advanced.rf ")"
     }
 
-    * Don't knkow
+    * Don't know
     if (advanced.dk) {
       put " dontknow("
       put advanced.dk ")"
+    }
+
+    * Not applicable
+    if (advanced.na) {
+      put " na("
+      put advanced.na ")"
     }
 
     * Consent 

@@ -1,60 +1,14 @@
+*! Version 1.0.1 Ishmail Azindoo Baako and Mehrab Ali 20Nov2020
 *! Version 1.0.0 Ishmail Azindoo Baako and Mehrab Ali 19Sep2020
 * Originally created by Ishmail Azindoo Baako (IPA) 24feb2018
 
-/*
-1. Incomplete: add incomplete() option // Done
-2. Duplicates: Add id() option, not mendatory // Done
-3. Consent: add consent(var, val) option, not mendatory  // Done
-4. No miss: Check the code. Check the purpose
-5. Follow up: Added variables specified in id() // Done
-6. Logic: It pulls from the relevance. Looks good.
-8. Constraint: Add hard min-max. Add softmin and softmax 10%+- of the value. // Done May be add an option to specify the percentage.
-9. Dates: Add dates, option startsurvey(ddmmmyyyy) // Done
-10. Specify: Looks good
-11. Outlier: Looks good. May be add multuplier as option // Done
-12. Text audit: Automatically create text audit groups, from begin group? Find inner groups? - Repeat groups do not need *. But add the begin repeat names
-13. enumdb: pull duration variable from calculation, include stats variables , EXCLUDE NOTE FIELDS FROM EVERYWHERE // Added duration(), all integer and decimals for stats
-14. Research db: option? // Done - varlist vs all
-15. Backcheck: option? // Done
-
-0. Setup: 
-	1. Progress report options
-Logic check:
-	regular expressions not working - text fields excluded from logic checks
-Text audit: Does not run for all groups
-			Add media folder location - Done
-Logic: For repeat group - tricky - added _1
-Specify: Fix for repeat groups - added_1
-Turning on and off
-
-For repeat group add the _1 variable and add a note that for further variables, add manually - Done
-What should we do for long data. A long term question, and should wait untill we solve the HFC input problem first.
-
-
-New list:
-1. Logic repeat in if_condition - done
-2. ResearchDB * does not work - added _1 suffix
-3. Check uid vs key: Added uid removed key, id will give error if does not exist, but will not break. - Done
-4. Long vs wide : remove * if wide, add repeat vars if wide [really?]
-5. Does backcheck have repeat variable issues?
-6. Removed ID from follow up - Done
-7. Add exclude variables in enumdb - Done
-8. No miss should exclude group relevances - Done
-9. Constraint repeat group
-10. Logic:
-		- Group relevane came twice for nested groups (not programmatically a problem, though)- 186
-		- using search makes varaibles string, but logic thinks it is numeric - Only solution is to change in the form, make string
-		- Quote signs are deleted from if_condition
-		- Check when to add double quote
-
-*/
 
 version 	12.0
 cap program drop ipachecksetup
 program define  ipachecksetup
 	#d;
-	syntax	using/, [template(string)] outfile(string) prefix(string)
-					[osp(real -666) REFusal(real -888) DONTKnow(real -999) 
+	syntax	using/, [template(string)] outfile(string) prefix(string) [outfolder(string)]
+					[osp(real -666) REFusal(real -888) DONTKnow(real -999) na(real -222)
 					consent(string) id(string) incomplete(string) surveystart(string)
 					MULtiplier(string) r1(string) r2(string) BACKcheck(string)
 					replace long wide label(string) enumid(string) teamid(string) 
@@ -204,7 +158,6 @@ program define  ipachecksetup
 			replace grp_var 	= 0 if missing(grp_var)
 			replace rpt_grp_var = 0 if missing(rpt_grp_var)
 
-			//replace name_log = subinstr(name, "_1", "", .) if (regexm(type, "^(begin)") & regexm(type, "group|repeat")) in `curr_sn'
 			replace name = subinstr(name, "*", "", .) if (regexm(type, "^(begin)") & regexm(type, "group|repeat")) in `curr_sn'
 			
 		}
@@ -249,7 +202,10 @@ program define  ipachecksetup
 		loc outfile = regexr("`outfile'", ".xlsm", "")
 		loc outfile =  "`outfile'.xlsm"
 		loc outfile = subinstr("`outfile'", "\", "/", .)
-		loc outfolder = reverse(substr(reverse("`outfile'"),strpos(reverse("`outfile'"), "/"), . ))
+		if "`outfolder'" == "" {
+			loc outfolder = reverse(substr(reverse("`outfile'"),strpos(reverse("`outfile'"), "/"), . ))	
+		}
+		
 		if "`template'"!="" {
 			copy "`template'" "`outfile'", `replace'
 		}
@@ -276,7 +232,7 @@ program define  ipachecksetup
 
 		replace data = "`outfile'" 			in 7 // HFC & BC input file name
 		loc outfile_dup = "`outfolder'`prefix'" + "_duplicates.xlsx"
-		loc outfile_hfc = "`outfolder'`prefix'" + "_HFC_output.xlsx"
+		loc outfile_hfc = "`outfolder'`prefix'" + "_hfc_output.xlsx"
 		loc outfile_enum = "`outfolder'`prefix'" + "_enumdb.xlsx"
 		loc outfile_text = "`outfolder'`prefix'" + "_text.xlsx"
 		loc outfile_r = "`outfolder'`prefix'" + "_research.xlsx"
@@ -299,6 +255,7 @@ program define  ipachecksetup
 		replace data = "formdef_version" 	in 30 // Form version
 		replace data = "`dontknow'" 		in 33 // missing (.d)
 		replace data = "`refusal'" 			in 34 // missing (.r)
+		replace data = "`na'" 				in 35 // missing (.n)
 
 
 		tempfile setup
@@ -309,7 +266,7 @@ program define  ipachecksetup
 			clear
 				g complete_value = ""
 				g name = ""
-				g complete_percent = 100
+				
 				
 			gettoken inc irest : incomplete, parse(",")
 			
@@ -345,6 +302,7 @@ program define  ipachecksetup
 			keep if mergeincomp==3
 
 				if _N > 0 {
+				g complete_percent = 100
 				* export variable and value to incomplete sheet
 				export excel name `label' complete_value complete_percent using "`outfile'", 							///
 						sheet("1. incomplete") sheetmodify cell(A2)
@@ -391,10 +349,8 @@ program define  ipachecksetup
 					noi di as err "Variable(s) `idlist' does not exist, but added in setup sheet."
 					noi di as result "", _n
 					sleep 200
-					//exit 111	// Will not break now, but will give a warning.
 				}		
 
-			//keep if mergeids==3 
  
 			keep if mergeids!=1 
 
@@ -467,7 +423,6 @@ program define  ipachecksetup
 		drop if inlist(type, "deviceid", "subscriberid", "simserial", "phonenumber", "username", "caseid")
 		
 		* keep only required or scto always generated vars
-		//replace required = lower(required)
 		keep if regexm(required, "[Yy][Ee][Ss]") | inlist(name, "starttime", "endtime", "duration") | (!mi(required) & lower(required)!="no")
 		* drop all notes and fields with no relevance
 		drop if type == "note" | !missing(relevance)
@@ -495,123 +450,7 @@ program define  ipachecksetup
 				sheet("4. no miss") sheetmodify cell(A2)
 		noi disp "... 4. no miss complete"
 		
-		/* * 05. followup
-		if "`id'"!="" {
-			use `_survey', clear
-			gettoken arg rest : id, parse(",")
-			local comb   : word 2 of `rest'
-			if  lower(stritrim("`comb'"))==""  {
-				loc arg = stritrim("`arg'")
-				loc arg = ustrregexra("`arg'", " ", "|")
-				export excel name `label' if regex(newname, "^(`arg')$")==1  using "`outfile'", 							///
-				sheet("5. follow up") sheetmodify cell(A2)
-				noi disp "... 5. follow up complete"
-			}
 		
-			if lower(stritrim("`comb'"))=="comb" {
-				clear 
-				set obs 1
-				gen name = stritrim("`arg'")
-				export excel name using "`outfile'", 							///
-				sheet("5. follow up") sheetmodify cell(A2)
-				noi disp "... 5. follow up complete"
-			}
-		
-		} */
-
-
-		* 06. logic
-		use `_survey', clear
-
-		* Add group|repeat relevance to individual field within groups
-
-		gen if_condition = ""
-		replace relevance = subinstr(relevance, "$", "", .) if !missing(relevance)
-		levelsof _sn if !missing(relevance) & regexm(type, "begin group|begin repeat"), ///
-			loc (groups) clean
-		foreach group in `groups' {
-			gen n = _n
-			loc start 	= _sn[`group']
-			loc end 	= _sn[`group']
-			loc relevance = relevance[`start']
-			replace if_condition = if_condition + "\(" + "`relevance'" + ")" in `start'/`end' if !regexm(if_condition, "`relevance'")
-			drop n
-		} 
-			* add relevance to if condition
-			//replace if_condition = if_condition + " & \(" + relevance + "\)" if !missing(if_condition)
-			replace if_condition = relevance if missing(if_condition)
-			replace if_condition = subinstr(if_condition, "and ()", "", .)
-
-		* Dropping all logic related to string fields temporarily as the DMS cannot work with string logics
-			levelsof name if type=="text" | regexm(type, "multiple") | regexm(appearance, "search")  ///
-							| regexm(relevance, "string\("), ///
-							loc(stringfield) clean
-			
-			g stringtag = .
-			foreach field of local stringfield {
-				replace stringtag = 1 if  regexm(relevance, "`field'")
-			}
-			
-			drop if stringtag==1
-
-		* drop all field without relevance
-		drop if missing(relevance) | relevance == "()" | type == "note" | regexm(type, "group|repeat")
-		if `=_N' > 0 {
-			* to cater for no spaces in programming, add white space to either side of =
-			* trim excess whitespace, change = to ==
-			foreach var of varlist relevance if_condition {
-				replace `var' = trim(itrim(subinstr(`var', "=", " # ", .)))
-				replace `var' = subinstr(`var', "'", char(34), .)
-				replace `var' = subinstr(`var', "> # ", ">= ", .)
-				replace `var' = subinstr(`var', "< # ", "<= ", .)
-				replace `var' = subinstr(`var', "! # ", "!= ", .)
-				replace `var' = subinstr(`var', "{", "", .)
-				replace `var' = subinstr(`var', "}", "", .)
-				replace `var' = subinstr(`var', " and ", " & ", .)
-				replace `var' = subinstr(`var', " or ", " | ", .)
-				replace `var' = subinstr(`var', "\(", "", 1)
-				replace `var' = subinstr(`var', "\", " & ", .)
-				replace `var' = subinstr(`var', "\", " & ", .)
-				replace `var' = subinstr(`var', "not(", "!(", .)
-				replace `var' = subinstr(`var', ")", "", 1) if strpos(`var', "(") == 0 ///
-					| (strpos(`var', "(") > strpos(`var', ")"))
-				loc repeat = 9
-				while `repeat' == 9 {
-					gen sub = substr(`var', (strpos(`var', "#") + 2), 1)
-					replace `var' = subinstr(`var', "#", "==", 1) if ///
-						regexm(sub, "[0-9]|[-]") | regexm(sub, char(34))
-					replace `var' = subinstr(`var', "#", "=", 1) if ///
-						regexm(sub, "[a-zA-Z]") | regexm(sub, char(34))
-					cap assert !regexm(`var', "#")
-					loc repeat `=_rc'
-					drop sub
-				}
-
-				* change selected and selected-at with regexm
-				replace `var' = subinstr(`var', "count-selected", "wordcount", .)
-				replace `var' = subinstr(`var', "selected-at", "regexm(string", .)
-				replace `var' = subinstr(`var', "selected", "regexm(string", .)
-				replace `var' = subinstr(`var', ", ", ",", .)
-				replace `var' = ustrregexra(`var', ",", "\),"+char(34) ) if strpos(`var',"regexm")
-				replace `var' = ustrregexra(`var', "\)", char(34)+"\)" ) if strpos(`var',"regexm")
-				replace `var' = ustrregexra(`var', char(34)+"\),", "\)," ) if strpos(`var',"regexm")
-				
-			}
-
-			
-				
-			* generate assertion. Assert for non-missing in all. Manual edits will be needed for addional
-			* assertions required
-			gen assertion = name_log + " == ."  if regexm(type, "integer|select_one")
-			replace assertion = "!missing(" + name_log + ")" ///
-												if missing(assertion) & ///
-												!inlist(type, "begin group", "end group", "begin repeat", "end repeat")
-													
-			* export variables to skip sheet. 
-		
-			export excel name_log `label' assertion if_condition using "`outfile'", sheet("6. logic") sheetmodify cell(A2)
-			noi disp "... 6. logic complete"
-		}
 
 		* 8. constraints
 		use `_survey', clear
@@ -721,7 +560,7 @@ program define  ipachecksetup
 				}
 				
 				export excel name `label' multiplier using "`outfile'", sheet("11. outliers") sheetmodify cell(A2)
-				mata: multiplier_format("`outfile'", "11. outliers")
+				mata: multiplier_format("`outfile'", "11. outliers", `=_N+1')
 				noi disp "... 11. outliers complete"
 			}
 
@@ -996,11 +835,11 @@ program define  ipachecksetup
 		noi disp "... 0. setup complete", _n
 
 		noi disp "Please remember to add and modify the input file before you run HFC." 	
-		noi disp "    1) Turn on and off the checks as appropriate" 
+		noi disp "    1) Activate and deactivate the checks as appropriate in 0. setup sheet" 
 		noi disp "    2) Locate replacement file and sheet name" 
 		noi disp "    3) Setup follow up sheet if needed"
 		noi disp "    4) Add variables from repeat groups if you are using wide data having repeat groups" 
-		noi disp "    5) Add additional logic checks in the logic sheet"
+		noi disp "    5) Add logic checks in the logic sheet"
 		noi disp "    6) Modify backchecks sheet to specify types of each variable and backcheck options", _n		
 	} 
 
@@ -1014,15 +853,18 @@ end
 
 mata:
 	mata clear
-	void multiplier_format(string scalar filename, string scalar sheet)
+	void multiplier_format(string scalar filename, string scalar sheet, real scalar nrow)
 	{
 		class xl scalar b
 		b = xl()
 		b.load_book(filename)
 		b.set_sheet(sheet)
-		rows = (2,100)
-		cols = (3,3)
+		
+		rows = (2, nrow)
+		cols = (3, 3)
+
 		b.set_number_format(rows,cols,"number_d2")
+		
 	}
 		
 end
