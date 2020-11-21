@@ -51,7 +51,7 @@ BEGIN
     SPINNER   rf   120   +20   60    ., label(Refusal:) tooltip("Default is -888") default(-888) min(-9999999)
     TEXT   tx_rf     20   @   100    ., label(Refusal:) 
     SPINNER   na   120   +20   60    ., label(NA:) tooltip("Default is -222") default(-222) min(-9999999)
-    TEXT   tx_na     20   @   100    ., label(NA:) 
+    TEXT   tx_na     20   @   100    ., label(N/A:) 
 
   GROUPBOX    gbox_id  220   -90  370 120, label("ID variables")
     TEXT      tx_sid   230   +30  90    40, label(Survey ID(s))
